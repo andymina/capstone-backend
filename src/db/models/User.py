@@ -1,5 +1,7 @@
+from bson import ObjectId
+
 class User:
-  _id: str
+  _id: ObjectId
   fname: str
   lname: str
   email: str
@@ -15,8 +17,33 @@ class User:
     self.lname = lname
     self.email = email
     self.pw = pw
-    self.review_ids = set()
-    self.drink_ids = set()
+
+  def add_drink(self, _id: ObjectId) -> None:
+    """
+    Adds a drink to user by ObjectId.
+
+    Arguments:
+        - `_id` { ObjectId }
+            - The ObjectId of the drink to be attached
+    """
+    self.drink_ids.add(str(_id))
+
+  def remove_drink(self, _id: ObjectId) -> bool:
+    """
+    Removes the drink from the ObjectId.
+
+    Arguments:
+        - `_id` { ObjectId }
+
+    Returns:
+        - bool
+            - Returns True if the drink was removed; False otherwise.
+    """
+    if str(_id) not in self.drink_ids:
+      return False
+    
+    self.drink_ids.remove(str(_id))
+    return True
 
   def toJSON(self) -> dict[str, str]:
     """
