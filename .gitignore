@@ -3,3 +3,7 @@ bin/
 lib/
 pyvenv.cfg
 .DS_Store
+.env
+__pycache__
+*.mustache
+.*/
