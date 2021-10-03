@@ -1,19 +1,30 @@
+import os, pymongo
 from dotenv import load_dotenv
-import os
-import pymongo
+from pymongo.database import Database
 
 msg = '.env loaded' if load_dotenv() else 'Failed to load .env'
 print(msg)
 
 class DBdriver:
-    client: pymongo.MongoClient = None
+  client: Database
 
-    def __init__(self) -> None:
-        self.client = pymongo.MongoClient(os.environ['MONGODB_URI'])
+  def __init__(self) -> None:
+    """
+    A driver used to make writing and reading from the database
+    easier.
 
-        try:
-            # The ping command is cheap and does not require auth.
-            self.client.admin.command('ping')
-            print('Connected to MongoDB')
-        except pymongo.ConnectionFailure:
-            print('Failed to connect to MongoDB')
+    Raises:
+        - `ConnectionError`
+             - Raised if the driver failed to connect to MongoDB
+    """
+    client = pymongo.MongoClient(os.environ['MONGODB_URI'])
+
+    try:
+      # ping is cheap and doesn't require auth
+      client.admin.command('ping')
+      print('Connected to MongoDB')
+    except pymongo.ConnectionFailure:
+      raise ConnectionError('Failed to connect to MongoDB')
+    
+    # connect to the capstone database
+    self.client = client.capstone
