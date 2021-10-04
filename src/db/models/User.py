@@ -18,31 +18,36 @@ class User:
     self.email = email
     self.pw = pw
 
-  def add_drink(self, _id: ObjectId) -> None:
+  def add_item(self, type: str, _id: ObjectId) -> None:
     """
-    Adds a drink to user by ObjectId.
+    Adds the item specified to this user.
 
     Arguments:
+        - `type` { str }
+            - Can be `drink` or `review`.
         - `_id` { ObjectId }
-            - The ObjectId of the drink to be attached
+            - The ObjectId of the item to be added
     """
-    self.drink_ids.add(str(_id))
+    self[type].add(str(_id))
 
-  def remove_drink(self, _id: ObjectId) -> bool:
+  def remove_item(self, type: str, _id: ObjectId) -> bool:
     """
-    Removes the drink from the ObjectId.
+    Removes the specified item from this user.
 
     Arguments:
+        - `type` { str }
+            - Can be `drink` or `review`.
         - `_id` { ObjectId }
+            - The ObjectId of the item to be removed.
 
     Returns:
         - bool
             - Returns True if the drink was removed; False otherwise.
     """
-    if str(_id) not in self.drink_ids:
+    if str(_id) not in self[type]:
       return False
     
-    self.drink_ids.remove(str(_id))
+    self[type].remove(str(_id))
     return True
 
   def toJSON(self) -> dict[str, str]:
