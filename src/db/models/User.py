@@ -8,6 +8,7 @@ class User:
   pw: str
   review_ids: set[str] = set() #ObjectIds of reviews from this user
   drink_ids: set[str] = set() #ObjectIds of drinks from this user
+  favorite_ids: set[str] = set() #ObjectIds of user's favorited drinks
 
   def __init__(self, fname: str, lname: str, email: str, pw: str) -> None:
     """
@@ -24,11 +25,11 @@ class User:
 
     Arguments:
         - `type` { str }
-            - Can be `drink` or `review`.
+            - Can be `drink`, `review`, or `favorite`.
         - `_id` { ObjectId }
             - The ObjectId of the item to be added
     """
-    self[type].add(str(_id))
+    self[type + "_ids"].add(str(_id))
 
   def remove_item(self, type: str, _id: ObjectId) -> bool:
     """
@@ -36,7 +37,7 @@ class User:
 
     Arguments:
         - `type` { str }
-            - Can be `drink` or `review`.
+            - Can be `drink`, `review`, or `favorite`.
         - `_id` { ObjectId }
             - The ObjectId of the item to be removed.
 
@@ -47,7 +48,7 @@ class User:
     if str(_id) not in self[type]:
       return False
     
-    self[type].remove(str(_id))
+    self[type + "_ids"].remove(str(_id))
     return True
 
   def toJSON(self) -> dict[str, str]:
