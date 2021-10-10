@@ -6,8 +6,8 @@ class Review:
   _id: ObjectId
   user_id: str
   drink_id: str
-  comment: set[str] = set() #comments of drinks from this review
-  date: datetime.datetime.now()
+  comment: str # make the comment to be one singualr string
+  date = datetime.datetime.now()
 
   def __init__(self, comment):
     """
