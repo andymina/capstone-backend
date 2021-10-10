@@ -9,10 +9,12 @@ class Review:
   comment: str # make the comment to be one singualr string
   date = datetime.datetime.now()
 
-  def __init__(self, comment):
+  def __init__(self, user_id: str, drink_id: str, comment: str) -> None:
     """
     Create a Review object according to our system diagram.
     """
+    self.user_id = user_id
+    self.drink_id = drink_id
     self.comment = comment
 
   #need to come back to this funciton
