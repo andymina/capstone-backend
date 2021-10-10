@@ -21,6 +21,9 @@ class Review:
   def toJSON(self) -> dict[str, str]:
 
     res = vars(self)
+    res['user_id'] = str(self.user_id)
+    res['drink_id'] = str(self.drink_id)
+    res['date'] = self.date
 
     # assure that every val is a str
     for key in res.keys():
