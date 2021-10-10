@@ -7,4 +7,8 @@ pyvenv.cfg
 __pycache__
 *.mustache
 .*/
+<<<<<<< HEAD
 sandbox.py
+=======
+sandbox.py
+>>>>>>> chore: update .gitignore
