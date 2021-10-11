@@ -1,4 +1,5 @@
 from bson import ObjectId
+from pprint import pformat
 
 class User:
   types = ['drink', 'favorite', 'review']
@@ -17,6 +18,10 @@ class User:
     self.review_ids = set() #ObjectIds of reviews from this user
     self.drink_ids = set() #ObjectIds of drinks from this user
     self.favorite_ids = set() #ObjectIds of user's favorited drinks
+
+  def __repr__(self) -> str:
+    data = pformat(vars(self))[1:-1]
+    return f"User <\n {data}\n>"
 
   def add_item(self, type: str, _id: ObjectId) -> None:
     """Adds the item specified to this user and updates the document representation.
@@ -94,9 +99,8 @@ class User:
     return res
 
 # sample code
-# andy = User("andy", "mina", "a@gmail.com", "123")
-# andy.add_item('drink', ObjectId(b'foo-bar-quux'))
-# print('---------- document ---------')
-# print(vars(andy))
-# print('---------- JSON ---------')
-# print(andy.toJSON())
+andy = User("andy", "mina", "a@gmail.com", "123")
+andy.add_item('drink', ObjectId(b'foo-bar-quux'))
+print(andy)
+print('---------- JSON ---------')
+print(andy.toJSON())
