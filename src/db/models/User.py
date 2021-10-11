@@ -73,17 +73,6 @@ class User:
       return True
 
     return False
-
-  def to_dict(self) -> dict:
-    """Converts this object to a dictionary representation. Used to read/write
-      from MongoDB.
-
-      Returns:
-          - dict
-              - A dict of (key, value) pairs that can directly be uploaded
-              to MongoDB
-    """
-    return self.__dict__
   
   def toJSON(self) -> dict:
     """Converts this object into a JSON-compatible dict that can sent
@@ -93,10 +82,12 @@ class User:
           - dict
               - A JSON-compatible dict of this object.
     """
+    # grab the dict
     res = vars(self)
 
     # manually convert any non-JSON fields
-    res['_id'] = str(self._id)
+    if self._id is not None:
+      res['_id'] = str(self._id) 
     for s in self.types:
       res[s + '_ids'] = [str(_id) for _id in getattr(self, s + '_ids')]
 
@@ -106,6 +97,6 @@ class User:
 andy = User("andy", "mina", "a@gmail.com", "123")
 andy.add_item('drink', ObjectId(b'foo-bar-quux'))
 print('---------- document ---------')
-print(andy.__dict__)
+print(vars(andy))
 print('---------- JSON ---------')
 print(andy.toJSON())
