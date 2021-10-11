@@ -1,24 +1,22 @@
 from bson import ObjectId
 
 class User:
-  _id: ObjectId = None
-  fname: str
-  lname: str
-  email: str
-  pw: str
   types = ['drink', 'favorite', 'review']
-  review_ids: set[ObjectId] = set() #ObjectIds of reviews from this user
-  drink_ids: set[ObjectId] = set() #ObjectIds of drinks from this user
-  favorite_ids: set[ObjectId] = set() #ObjectIds of user's favorited drinks
 
   def __init__(self, fname: str, lname: str, email: str, pw: str) -> None:
     """Create a User object according to our system diagram.
     """
-
+    # set basic user info
     self.fname = fname
     self.lname = lname
     self.email = email
     self.pw = pw
+
+    # set _id fields
+    self._id: ObjectId = None
+    self.review_ids = set() #ObjectIds of reviews from this user
+    self.drink_ids = set() #ObjectIds of drinks from this user
+    self.favorite_ids = set() #ObjectIds of user's favorited drinks
 
   def add_item(self, type: str, _id: ObjectId) -> None:
     """Adds the item specified to this user and updates the document representation.
@@ -35,7 +33,6 @@ class User:
           - `TypeError`
               - Raised if `_id` is not an ObjectId.
     """
-
     # error checking
     if type not in self.types:
       raise ValueError("`type` must be one of ['drink', 'favorite', 'review']")
@@ -64,7 +61,6 @@ class User:
           - bool
               - Returns True if the drink was removed; False otherwise.
     """
-
     # error checking
     if type not in self.types:
       raise ValueError("`type` must be one of ['drink', 'favorite', 'review']")
@@ -87,12 +83,7 @@ class User:
               - A dict of (key, value) pairs that can directly be uploaded
               to MongoDB
     """
-    res = vars(self)
-
-    for s in ['drink', 'favorite', 'review']:
-      res[s + '_ids'] = list(getattr(self, s + '_ids'))
-    
-    return res
+    return self.__dict__
   
   def toJSON(self) -> dict:
     """Converts this object into a JSON-compatible dict that can sent
@@ -106,15 +97,15 @@ class User:
 
     # manually convert any non-JSON fields
     res['_id'] = str(self._id)
-    for s in ['drink', 'favorite', 'review']:
+    for s in self.types:
       res[s + '_ids'] = [str(_id) for _id in getattr(self, s + '_ids')]
 
     return res
 
 # sample code
-# andy = User("andy", "mina", "a@gmail.com", "123")
-# andy.add_item('drink', ObjectId(b'foo-bar-quux'))
-# print('---------- document ---------')
-# print(andy.to_dict())
-# print('---------- JSON ---------')
-# print(andy.toJSON())
+andy = User("andy", "mina", "a@gmail.com", "123")
+andy.add_item('drink', ObjectId(b'foo-bar-quux'))
+print('---------- document ---------')
+print(andy.__dict__)
+print('---------- JSON ---------')
+print(andy.toJSON())
