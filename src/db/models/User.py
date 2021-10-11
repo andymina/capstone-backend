@@ -94,9 +94,9 @@ class User:
     return res
 
 # sample code
-andy = User("andy", "mina", "a@gmail.com", "123")
-andy.add_item('drink', ObjectId(b'foo-bar-quux'))
-print('---------- document ---------')
-print(vars(andy))
-print('---------- JSON ---------')
-print(andy.toJSON())
+# andy = User("andy", "mina", "a@gmail.com", "123")
+# andy.add_item('drink', ObjectId(b'foo-bar-quux'))
+# print('---------- document ---------')
+# print(vars(andy))
+# print('---------- JSON ---------')
+# print(andy.toJSON())
