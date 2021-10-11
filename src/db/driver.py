@@ -59,7 +59,7 @@ class DBdriver:
     temp._id = self.client.users.insert_one(vars(temp))
     return temp
 
-
+# sample code
 # d = DBdriver()
 # d.createUser('andy', 'mina', 'andy@gmail.com', '123')
 # andy = d.getUser('andy@gmail.com')
