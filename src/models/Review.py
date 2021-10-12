@@ -7,15 +7,17 @@ class Review:
   user_id: str
   drink_id: str
   comment: str # make the comment to be one singualr string
+  rating : str
   date = datetime.datetime.now()
 
-  def __init__(self, user_id: str, drink_id: str, comment: str) -> None:
+  def __init__(self, user_id: str, drink_id: str, comment: str, rating: str) -> None:
     """
     Create a Review object according to our system diagram.
     """
     self.user_id = user_id
     self.drink_id = drink_id
     self.comment = comment
+    self.rating = rating
 
   #need to come back to this funciton
   def toJSON(self) -> dict[str, str]:
