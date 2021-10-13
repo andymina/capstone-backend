@@ -5,7 +5,7 @@ import datetime
 
 class Review:
 
-  def __init__(self, user_id: str, drink_id: str, comment: str, rating: int) -> None:
+  def __init__(self, user_id: ObjectId, drink_id: ObjectId, comment: str, rating: int) -> None:
     """
     Create a Review object according to our system diagram.
     """
