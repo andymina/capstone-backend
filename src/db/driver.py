@@ -3,8 +3,6 @@ from bson import ObjectId
 from dotenv import load_dotenv
 from pymongo.database import Database
 from db.models.User import User
-#debug
-from pprint import pprint
 
 msg = '.env loaded' if load_dotenv() else 'Failed to load .env'
 print(msg)
