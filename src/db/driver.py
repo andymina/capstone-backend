@@ -2,7 +2,7 @@ import os, pymongo
 from bson import ObjectId
 from dotenv import load_dotenv
 from pymongo.database import Database
-from db.models.User import User
+from models import User
 
 msg = '.env loaded' if load_dotenv() else 'Failed to load .env'
 print(msg)
