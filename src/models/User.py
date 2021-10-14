@@ -14,7 +14,6 @@ class User:
     self.pw = pw
 
     # set _id fields
-    self._id: ObjectId = None
     self.review_ids = set() #ObjectIds of reviews from this user
     self.drink_ids = set() #ObjectIds of drinks from this user
     self.favorite_ids = set() #ObjectIds of user's favorited drinks

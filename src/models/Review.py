@@ -8,12 +8,11 @@ class Review:
     """
     Create a Review object according to our system diagram.
     """
-    self._id: ObjectId = None
     self.user_id = user_id
     self.drink_id = drink_id
     self.comment = comment
     self.rating = rating
-    self.date = datetime.datetime.now()
+    self.date = date
 
   def __repr__(self) -> str:
     data = pformat(vars(self))[1:-1]

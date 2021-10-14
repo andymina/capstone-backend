@@ -1,2 +1,2 @@
-from User import User
-from Review import Review
+from .User import User
+from .Review import Review

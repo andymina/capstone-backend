@@ -8,8 +8,6 @@ msg = '.env loaded' if load_dotenv() else 'Failed to load .env'
 print(msg)
 
 class DBdriver:
-  client: Database
-
   def __init__(self) -> None:
     """A driver used to make writing and reading from the database easier.
 
@@ -27,7 +25,7 @@ class DBdriver:
       raise ConnectionError('Failed to connect to MongoDB')
     
     # connect to the capstone database
-    self.client = client.capstone
+    self.client: Database = client.capstone
 
   # region User
   def toUser(self, doc: dict) -> User:
@@ -79,9 +77,15 @@ class DBdriver:
     if existing_user is not None:
       return existing_user
 
-    # insert a new user
+    # create a new user
     temp = User(fname, lname, email, pw)
-    temp._id = self.client.users.insert_one(vars(temp))
+    # grab the dict for Mongo
+    doc = vars(temp).copy()
+    for type in User.types:
+      doc[type + '_ids'] = list(doc[type + '_ids'])
+    
+    # create in db and return
+    temp._id = self.client.users.insert_one(doc).inserted_id
     return temp
 
   def updateUser(self, email: str, fields: dict) -> User or None:
@@ -155,7 +159,7 @@ class DBdriver:
       return self.toReview(existing_review)
 
     temp = Review(user_id, drink_id, comment, rating)
-    temp._id = self.client.reviews.insert_one(vars(temp))
+    temp._id = self.client.reviews.insert_one(vars(temp)).inserted_id
     return temp
 
   def updateReview(self, _id: ObjectId, fields: dict) -> Review or None:
@@ -192,9 +196,10 @@ class DBdriver:
     return res.deleted_count
   # endregion
 
-# sample code
+# region sample code
 # d = DBdriver()
-# d.createUser('andy', 'mina', 'andy@gmail.com', '123')
-# andy = d.getUser('andy@gmail.com')
-# print(andy)
-# d.upsertUser('andy@gmail.com', { 'pw': 'abc' })
+
+# user
+# andy = d.createUser('andy', 'mina', 'andy@gmail.com', '123')
+
+# endregion
