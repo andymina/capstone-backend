@@ -2,7 +2,7 @@ from bson import ObjectId
 from pprint import pformat
 
 class Drink:
-  types = [-1, 1, 2, 3, 4, 5]
+  types = [-1, 0, 1, 2, 3, 4, 5]
 
   def __init__(self, user_id: ObjectId, ingredients = [ ]) -> None :
     self.user_id = user_id
@@ -19,7 +19,7 @@ class Drink:
   def add_review(self, type: int, _id: ObjectId)->None:
     # error check
     if type not in self.types:
-      raise ValueError("`type` must be one of [-1, 1, 2, 3, 4, 5]")
+      raise ValueError("`type` must be one of [-1, 0, 1, 2, 3, 4, 5]")
     if not isinstance(_id, ObjectId):
       raise TypeError("`id` must be an ObjectId")
 
