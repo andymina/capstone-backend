@@ -16,7 +16,7 @@ class Drink:
     data = pformat(vars(self))[1:-1]
     return f"Drink <\n {data}\n>"
 
-  def remove_review(self, type = [], _id = ObjectId) -> bool:
+  def remove_review(self, type: int, _id = ObjectId) -> bool:
     if type not in self.types:
       raise ValueError("`type` must be one of [-1, 1, 2, 3, 4, 5]")
     if not isinstance(_id, ObjectId):
