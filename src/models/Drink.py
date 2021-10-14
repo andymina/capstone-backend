@@ -2,6 +2,7 @@ from bson import ObjectId
 from pprint import pformat
 
 class Drink:
+  types = [-1, 1, 2, 3, 4, 5]
 
   def __init__(self, user_id: ObjectId, ingredients = [ ]) -> None :
     self.user_id = user_id
@@ -13,7 +14,7 @@ class Drink:
 
   def __repr__(self) -> str:
     data = pformat(vars(self))[1:-1]
-    return f"Drink<\n {data}\n>"
+    return f"Drink <\n {data}\n>"
 
   def toJSON(self) -> dict:
     res = vars(self)
