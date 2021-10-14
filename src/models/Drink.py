@@ -16,6 +16,18 @@ class Drink:
     data = pformat(vars(self))[1:-1]
     return f"Drink <\n {data}\n>"
 
+  def remove_review(self, type = [], _id = ObjectId) -> bool:
+    if type not in self.types:
+      raise ValueError("`type` must be one of [-1, 1, 2, 3, 4, 5]")
+    if not isinstance(_id, ObjectId):
+      raise TypeError("`_id` must be on ObjectId")
+
+    #remove if found
+    if _id in getattr(self, type + '_ids'):
+      getattr(self, type + '_ids').remove(_id)
+      return True
+    return False
+
   def toJSON(self) -> dict:
     res = vars(self)
     res['user_id'] = str(self.user_id)
