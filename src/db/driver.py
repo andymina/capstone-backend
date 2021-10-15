@@ -2,7 +2,7 @@ import os, pymongo
 from bson import ObjectId
 from pymongo import ReturnDocument
 from pymongo.database import Database
-from models import User, Review
+from models import User, Review, Drink
 
 class DBdriver:
   def __init__(self) -> None:
@@ -22,8 +22,11 @@ class DBdriver:
     
     # connect to the capstone database
     self.client: Database = client.capstone
-    # TODO: add drink serializer
-    self.serializers = { 'review': self.toReview, 'user': self.toUser }
+    self.serializers = {
+      'drink': self.toDrink,
+      'review': self.toReview,
+      'user': self.toUser
+    }
 
   # region User
   def toUser(self, doc: dict) -> User:
@@ -84,7 +87,7 @@ class DBdriver:
     return temp
 
   def attachItem(self, type: str, email: str, _id: ObjectId, hint: User = None):
-    """Attach an itme to the User given the user's email and item's _id.
+    """Attach an item to the User given the user's email and item's _id.
 
       Arguments:
         - type { str }: Must be one of ['drink', 'favorite', 'review'].
@@ -240,7 +243,7 @@ class DBdriver:
         - rating { int }
 
       Returns:
-        - Review
+        - `Review`
           - The newly created Review. If the review already exists, returns it.
     """
     existing_review = self.client.reviews.find_one({ 'user_email': user_email, 'drink_id': drink_id })
@@ -279,6 +282,92 @@ class DBdriver:
     """
     res = self.client.reviews.delete_one({ '_id': _id })
     return bool(res.deleted_count)
+  # endregion
+
+  # region Drink
+  def toDrink(self, doc: dict) -> Drink:
+    """Converts a MongoDB document to a Drink.
+
+      Arguments:
+        - doc { dict }: a document representing a Drink
+      
+      Returns:
+        - `Drink`
+    """
+    pass
+
+  def getDrink(self, _id: ObjectId) -> Drink or None:
+    """Gets a Drink by _id.
+      
+      Returns:
+        - `Drink or None`: Drink object if the Drink exists. `None` otherwise.
+    """
+    pass
+
+  def createDrink(self, user_email: str, ingredients: list) -> Drink:
+    """Creates a Drink in the db and returns it.
+
+      Arguments:
+        - user_email { str }
+        - ingredients { list }
+      
+      Returns:
+        - `Drink`: The newly created Drink. If the drink already exists, returns it.
+    """
+    pass
+  
+  def attachReview(drink_id: ObjectId, review_id: ObjectId, hint: Drink = None):
+    """Attach a review to the drink specified by _id.
+
+      Arguments:
+        - drink_id { ObjectId }
+        - review_id { ObjectId }
+        - hint { Drink, optional }:Providing a User for hint will prevent getting the User
+          from the database. Defaults to None.
+
+      Raises:
+        - `KeyError`: raised if User with the given email (email param or hint.email) DNE.
+    """
+    pass
+
+  def detachReview(drink_id: ObjectId, review_id: ObjectId, hint: Drink = None):
+    """Detaches the review with the associated _id from this drink.
+
+      Arguments:
+        - drink_id { ObjectId }
+        - review_id: { ObjectId }
+        - hint { Drink, optional }: Providing a User for hint will prevent getting the User
+          from the database. Defaults to None.
+
+      Raises:
+        - `KeyError`: raised if User with the given email (email param or hint.email) DNE.
+    """
+    pass
+
+  def updateDrink(self, _id: ObjectId, fields: dict) -> Drink or None:
+    """Updates the fields of Drink by _id. If DNE, returns `None`.
+
+      Arguments:
+        - _id { ObjectId }
+        - fields { dict }: (k, v) pairs of the fields to be updated and their new values
+
+      Returns:
+        - `Drink`: the updated Drink.
+        - `None`: if Fields is an empty dict or Drink DNE.
+    """
+    pass
+
+  def deleteDrink(self, _id: ObjectId) -> bool:
+    """Deletes a Drink by _id in the db.
+
+      Arguments:
+        - _id { ObjectId }
+
+      Returns:
+          - `bool`: True if the Drink was removed, False otherwise.
+    """
+    pass
+
   # endregion
 
 # region sample code
