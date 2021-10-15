@@ -1,19 +1,20 @@
 from bson import ObjectId
 from pprint import pformat
-import datetime
+from datetime import datetime
 
 class Review:
 
-  def __init__(self, user_id: ObjectId, drink_id: ObjectId, comment: str, rating: int) -> None:
+  def __init__(
+    self, user_email: str, drink_id: ObjectId,
+    comment: str, rating: int, date = datetime.now()
+  ) -> None:
+    """Create a Review object according to our system diagram.
     """
-    Create a Review object according to our system diagram.
-    """
-    self._id: ObjectId = None
-    self.user_id = user_id
+    self.user_email = user_email
     self.drink_id = drink_id
     self.comment = comment
     self.rating = rating
-    self.date = datetime.datetime.now()
+    self.date = date
 
   def __repr__(self) -> str:
     data = pformat(vars(self))[1:-1]
