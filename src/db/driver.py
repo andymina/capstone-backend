@@ -1,12 +1,8 @@
 import os, pymongo
 from bson import ObjectId
-from dotenv import load_dotenv
 from pymongo import ReturnDocument
 from pymongo.database import Database
 from models import User, Review
-
-msg = '.env loaded' if load_dotenv() else 'Failed to load .env'
-print(msg)
 
 class DBdriver:
   def __init__(self) -> None:
