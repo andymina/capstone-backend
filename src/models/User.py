@@ -26,65 +26,54 @@ class User:
     """Adds the item specified to this user and updates the document representation.
 
       Arguments:
-          - `type` { str }
-              - Must be one of ['drink', 'favorite', 'review'].
-          - `_id` { ObjectId }
-              - The ObjectId of the item to be added.
+        - type { str }: must be one of ['drink', 'favorite', 'review'].
+        - _id { ObjectId }: the ObjectId of the item to be added.
       
       Raises:
-          - `ValueError`
-              - Raised if `type` is not one of the above.
-          - `TypeError`
-              - Raised if `_id` is not an ObjectId.
+          - `ValueError`: if `type` is not one of the above.
+          - `TypeError`: if `_id` is not an ObjectId.
     """
     # error checking
     if type not in self.types:
-      raise ValueError("`type` must be one of ['drink', 'favorite', 'review']")
-    if not isinstance(_id, ObjectId):
+      raise ValueError(f"`type` must be one of {User.types}")
+    elif not isinstance(_id, ObjectId):
       raise TypeError("`_id` must be an ObjectId")
 
     # grab the collection of _ids we want
-    getattr(self, type + '_ids').add(_id)
+    getattr(self, f"{type}_ids").add(_id)
 
   def remove_item(self, type: str, _id: ObjectId) -> bool:
-    """Removes the specified item from this user.
+    """Removes the specified item from this user by _id.
 
       Arguments:
-          - `type` { str }
-              - Must be one of ['drink', 'favorite', 'review'].
-          - `_id` { ObjectId }
-              - The ObjectId of the item to be removed.
-
+        - type { str }: must be one of ['drink', 'favorite', 'review'].
+        - _id { ObjectId }: the ObjectId of the item to be added.
+      
       Raises:
-          - `ValueError`
-              - Raised if `type` is not one of the above.
-          - `TypeError`
-              - Raised if `_id` is not an ObjectId.
+          - `ValueError`: if `type` is not one of the above.
+          - `TypeError`: if `_id` is not an ObjectId.
 
       Returns:
-          - bool
-              - Returns True if the drink was removed; False otherwise.
+          - `bool`: True if the drink was removed; False otherwise.
     """
     # error checking
     if type not in self.types:
-      raise ValueError("`type` must be one of ['drink', 'favorite', 'review']")
-    if not isinstance(_id, ObjectId):
+      raise ValueError(f"`type` must be one of {User.types}")
+    elif not isinstance(_id, ObjectId):
       raise TypeError("`_id` must be an ObjectId")
 
     # remove if found
-    if _id in getattr(self, type + '_ids'):
-      getattr(self, type + '_ids').remove(_id)
+    if _id in getattr(self, f"{type}_ids"):
+      getattr(self, f"{type}_ids").remove(_id)
       return True
 
     return False
   
   def toJSON(self) -> dict:
-    """Converts this object into a JSON-compatible dict that can sent
-      by Flask directly.
+    """Converts this object into a JSON-compatible dict that can sent by Flask directly.
 
       Returns:
-          - dict
-              - A JSON-compatible dict of this object.
+        - `dict`: a JSON-compatible dict of this object.
     """
     # grab the dict
     res = vars(self)

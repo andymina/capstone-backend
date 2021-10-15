@@ -1,6 +1,7 @@
 import os, pymongo
 from bson import ObjectId
 from dotenv import load_dotenv
+from pymongo import ReturnDocument
 from pymongo.database import Database
 from models import User, Review
 
@@ -12,8 +13,7 @@ class DBdriver:
     """A driver used to make writing and reading from the database easier.
 
       Raises:
-          - `ConnectionError`
-              - Raised if the driver failed to connect to MongoDB
+        - `ConnectionError`: Raised if the driver failed to connect to MongoDB
     """
     client = pymongo.MongoClient(os.environ['MONGODB_URI'])
 
@@ -31,12 +31,11 @@ class DBdriver:
   def toUser(self, doc: dict) -> User:
     """Converts a MongoDB document to a User.
 
-        Arguments:
-            - `doc` { dict }
-                - A document representing a User
+      Arguments:
+        - doc { dict }: a document representing a User
 
-        Returns:
-            - User
+      Returns:
+        - `User`
     """
     # create the obj
     res = User(doc['fname'], doc['lname'], doc['email'], doc['pw'])
@@ -51,9 +50,8 @@ class DBdriver:
   def getUser(self, email: str) -> User or None:
     """Gets a User by email.
 
-        Returns:
-            - User or `None`
-                - User object if the user exists. `None` otherwise.
+      Returns:
+        - `User` or `None`: User object if the user exists. `None` otherwise.
     """
     # query for the user
     res = self.client.users.find_one({ 'email': email })
@@ -62,15 +60,14 @@ class DBdriver:
   def createUser(self, fname: str, lname: str, email: str, pw: str) -> User:
     """Creates a User in the db and returns it.
 
-        Arguments:
-            - `fname` { str }
-            - `lname` { str }
-            - `email` { str }
-            - `pw` { str }
+      Arguments:
+        - fname { str }
+        - lname { str }
+        - email { str }
+        - pw { str }
 
-        Returns:
-            - User
-                - The newly created User. If the user already exists, returns it.
+      Returns:
+        - `User`: the newly created User. If the user already exists, returns it.
     """
     # check if this user exists and return it
     existing_user = self.getUser(email)
@@ -88,41 +85,110 @@ class DBdriver:
     temp._id = self.client.users.insert_one(doc).inserted_id
     return temp
 
+  def attachItem(self, type: str, email: str, _id: ObjectId, hint: User = None):
+    """Attach an itme to the User given the user's email and item's _id.
+
+      Arguments:
+        - type { str }: Must be one of ['drink', 'favorite', 'review'].
+        - email { str }
+        - _id { ObjectId }
+        - hint { User, optional }: Providing a User for hint will prevent getting the User
+          from the database. Defaults to None.
+
+      Raises:
+         - `KeyError`: raised if User with the given email (email param or hint.email) DNE.
+    """
+    # grab the user
+    target = hint if hint is not None else self.getUser(email)
+    if target is None:
+      raise KeyError(f"User with email `{target.email}` DNE")
+
+    # attempt to update db
+    res = self.client.users.update_one(
+      { 'email': target.email },
+      { '$addToSet': { f"{type}_ids": _id } }
+    )
+    # check if update failed
+    if res.modified_count == 0:
+      raise KeyError(f"User with email `{target.email}` DNE")
+
+    target.add_item(type, _id)
+    return target
+
+  def detachItem(self, type: str, email: str, _id: ObjectId, hint: User = None):
+    """Optimized way to detach _id from user's drinks, favorites, or reviews.
+
+      Arguments:
+        - type { str }: Must be one of ['drink', 'favorite', 'review']
+        - email { str }
+        - _id { ObjectId }
+        - hint { User, optional }: Providing a User for hint will prevent getting the User
+          from the database. Defaults to None.
+
+      Raises:
+         - `KeyError`: raised if User with the given email (email param or hint.email) DNE.
+    """
+    # grab the user
+    target = hint if hint is not None else self.getUser(email)
+    if target is None:
+      raise KeyError(f"User with email `{target.email}` DNE")
+
+    # attempt to update db
+    res = self.client.users.update_one(
+      { 'email': target.email },
+      { '$pullAll': { f"{type}_ids": _id } }
+    )
+    # check if update failed
+    if res.modified_count == 0:
+      raise KeyError(f"User with email `{target.email}` DNE")
+
+    target.remove_item(type, _id)
+    return target    
+
   def updateUser(self, email: str, fields: dict) -> User or None:
     """Updates the fields of User by email. If DNE, returns `None`.
 
-        Arguments:
-            - `email` { str }
-            - `fields` { dict }
-                - k, v pairs of the fields to be updated and their new values
+      Arguments:
+        - email { str }
+        - fields { dict }: k, v pairs of the fields to be updated and their new values
 
-        Returns:
-            - User
-                - the updated User
-            - `None`
-                - if Fields is an empty dict or User DNE.
+      Returns:
+        - `User`: the updated User
+        - `None`: if Fields is an empty dict or User DNE.
     """
+    # check we don't process any of User.types
+    for type in User.types:
+      if type in fields:
+        raise UserWarning(
+          "Use `attachItem` and `detachItem` when updating containers\
+          of _ids as they are optimized for this functionality"
+        )
+    
     if len(fields) == 0:
       return None
 
-    # upsert
-    res = self.client.users.find_one_and_update({ 'email': email }, { '$set': fields })
+    # attempt to update in db
+    res = self.client.users.find_one_and_update(
+      { 'email': email }, { '$set': fields },
+      return_document = ReturnDocument.AFTER
+    )
+
     return self.toUser(res) if res else None
+
   # endregion
   
   # region Review
   def toReview(self, doc: dict) -> Review:
     """Converts a MongoDB document to a Review.
 
-        Arguments:
-            - `doc` { dict }
-                - A document representing a Review
+      Arguments:
+        - doc { dict }: a document representing a Review
 
-        Returns:
-            - Review
+      Returns:
+          - `Review`
     """
     res = Review(
-      doc['user_id'], doc['drink_id'],
+      doc['user_email'], doc['drink_id'],
       doc['comment'], doc['rating'],
       doc['date']
     )
@@ -132,49 +198,45 @@ class DBdriver:
     return res
   
   def getReview(self, _id: ObjectId) -> Review or None:
-    """Gets a Review by email.
+    """Gets a Review by _id.
 
-    Returns:
-        - Review or `None`
-            - Review object if the Review exists. `None` otherwise.
+      Returns:
+        - `Review` or `None`: Review object if the Review exists. `None` otherwise.
     """
     res = self.client.reviews.find_one({ '_id': _id })
     return self.toReview(res) if res else None
 
-  def createReview(self, user_id: ObjectId, drink_id: ObjectId, comment: str, rating: int):
+  def createReview(self, user_email: str, drink_id: ObjectId, comment: str, rating: int) -> Review:
     """Creates a Review in the db and returns it.
 
-        Arguments:
-            - `user_id` { ObjectId }
-            - `drink_id` { ObjectId }
-            - `comment` { str }
-            - `rating` { int }
+      Arguments:
+        - user_email { str }
+        - drink_id { ObjectId }
+        - comment { str }
+        - rating { int }
 
-        Returns:
-            - Review
-                - The newly created Review. If the review already exists, returns it.
+      Returns:
+        - Review
+          - The newly created Review. If the review already exists, returns it.
     """
-    existing_review = self.client.reviews.find_one({ 'user_id': user_id, 'drink_id': drink_id })
+    existing_review = self.client.reviews.find_one({ 'user_email': user_email, 'drink_id': drink_id })
     if existing_review is not None:
       return self.toReview(existing_review)
 
-    temp = Review(user_id, drink_id, comment, rating)
+    temp = Review(user_email, drink_id, comment, rating)
     temp._id = self.client.reviews.insert_one(vars(temp)).inserted_id
     return temp
 
   def updateReview(self, _id: ObjectId, fields: dict) -> Review or None:
     """Updates the fields of Review by _id. If DNE, returns `None`.
 
-        Arguments:
-            - `_id` { ObjectId }
-            - `fields` { dict }
-                - k, v pairs of the fields to be updated and their new values
+      Arguments:
+        - _id { ObjectId }
+        - fields { dict }: (k, v) pairs of the fields to be updated and their new values
 
-        Returns:
-            - Review
-                - the updated Review
-            - `None`
-                - if Fields is an empty dict or Review DNE.
+      Returns:
+        - `Review`: the updated Review.
+        - `None`: if Fields is an empty dict or Review DNE.
     """
     if len(fields) == 0:
       return None
@@ -185,15 +247,14 @@ class DBdriver:
   def deleteReview(self, _id: ObjectId) -> bool:
     """Deletes a Review by _id in the db.
 
-        Arguments:
-            - `_id` { ObjectId }
+      Arguments:
+        - _id { ObjectId }
 
-        Returns:
-            - bool
-                - True if the review was removed, false otherwise.
+      Returns:
+          - `bool`: True if the review was removed, False otherwise.
     """
     res = self.client.reviews.delete_one({ '_id': _id })
-    return res.deleted_count
+    return bool(res.deleted_count)
   # endregion
 
 # region sample code

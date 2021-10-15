@@ -8,5 +8,4 @@ app = Flask(__name__)
 app.register_blueprint(UserBP.api)
 app.register_blueprint(DrinkBP.api)
 app.register_blueprint(ReviewBP.api)
-
 app.run(debug = True)
