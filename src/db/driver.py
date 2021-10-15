@@ -26,6 +26,8 @@ class DBdriver:
     
     # connect to the capstone database
     self.client: Database = client.capstone
+    # TODO: add drink serializer
+    self.serializers = { 'review': self.toReview, 'user': self.toUser }
 
   # region User
   def toUser(self, doc: dict) -> User:
@@ -113,7 +115,6 @@ class DBdriver:
       raise KeyError(f"User with email `{target.email}` DNE")
 
     target.add_item(type, _id)
-    return target
 
   def detachItem(self, type: str, email: str, _id: ObjectId, hint: User = None):
     """Optimized way to detach _id from user's drinks, favorites, or reviews.
@@ -143,7 +144,34 @@ class DBdriver:
       raise KeyError(f"User with email `{target.email}` DNE")
 
     target.remove_item(type, _id)
-    return target    
+
+  def getItems(self, type: str, email: str) -> list:
+    """Returns all items of 'type' created by this user.
+
+      Arguments:
+        - type { str }: [description]
+        - email { str }: [description]
+
+      Raises:
+        - `ValueError`: if type is not one of ['drink', 'favorite', 'review']
+      
+      Returns:
+        - `list`: list of type objects for the given user. If type is 'favorite'
+          a list of Drinks will be returned.
+    """
+    if type not in User.types:
+      raise ValueError(f"`type` must be one of {User.types}")
+
+    # grab ObjectIds
+    qres = self.client.users.find_one({ 'email': email }, { "_id": 0, f"{type}_ids": 1 })
+    _ids = qres[f"{type}_ids"]
+    # set type to align with collections
+    type = 'drink' if type == 'favorite' else type
+    # grab Objects
+    res = []
+    for item in self.client[f"{type}s"].find({ '_id': { '$in': _ids } }):
+      res.append(self.serializers[type](item))
+    return res
 
   def updateUser(self, email: str, fields: dict) -> User or None:
     """Updates the fields of User by email. If DNE, returns `None`.
