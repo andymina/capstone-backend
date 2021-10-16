@@ -2,10 +2,10 @@ import os, pymongo
 from bson import ObjectId
 from pymongo import ReturnDocument
 from pymongo.database import Database
-from models import User, Review
+from models import User, Review, Drink
 
 class DBdriver:
-  def __init__(self) -> None:
+  def __init__(self, logger) -> None:
     """A driver used to make writing and reading from the database easier.
 
       Raises:
@@ -16,14 +16,17 @@ class DBdriver:
     try:
       # ping is cheap and doesn't require auth
       client.admin.command('ping')
-      print('Connected to MongoDB')
+      logger.info('Connected to MongoDB')
     except pymongo.ConnectionFailure:
       raise ConnectionError('Failed to connect to MongoDB')
     
     # connect to the capstone database
     self.client: Database = client.capstone
-    # TODO: add drink serializer
-    self.serializers = { 'review': self.toReview, 'user': self.toUser }
+    self.serializers = {
+      'drink': self.toDrink,
+      'review': self.toReview,
+      'user': self.toUser
+    }
 
   # region User
   def toUser(self, doc: dict) -> User:
@@ -84,7 +87,7 @@ class DBdriver:
     return temp
 
   def attachItem(self, type: str, email: str, _id: ObjectId, hint: User = None):
-    """Attach an itme to the User given the user's email and item's _id.
+    """Attach an item to the User given the user's email and item's _id.
 
       Arguments:
         - type { str }: Must be one of ['drink', 'favorite', 'review'].
@@ -145,8 +148,8 @@ class DBdriver:
     """Returns all items of 'type' created by this user.
 
       Arguments:
-        - type { str }: [description]
-        - email { str }: [description]
+        - type { str }: Must be one of ['drink', 'review', 'favorite']
+        - email { str }
 
       Raises:
         - `ValueError`: if type is not one of ['drink', 'favorite', 'review']
@@ -160,6 +163,10 @@ class DBdriver:
 
     # grab ObjectIds
     qres = self.client.users.find_one({ 'email': email }, { "_id": 0, f"{type}_ids": 1 })
+
+    if qres is None:
+      raise KeyError(f"User with email {email} DNE")
+
     _ids = qres[f"{type}_ids"]
     # set type to align with collections
     type = 'drink' if type == 'favorite' else type
@@ -240,7 +247,7 @@ class DBdriver:
         - rating { int }
 
       Returns:
-        - Review
+        - `Review`
           - The newly created Review. If the review already exists, returns it.
     """
     existing_review = self.client.reviews.find_one({ 'user_email': user_email, 'drink_id': drink_id })
@@ -279,6 +286,163 @@ class DBdriver:
     """
     res = self.client.reviews.delete_one({ '_id': _id })
     return bool(res.deleted_count)
+  # endregion
+
+  # region Drink
+  def toDrink(self, doc: dict) -> Drink:
+    """Converts a MongoDB document to a Drink.
+
+      Arguments:
+        - doc { dict }: a document representing a Drink
+      
+      Returns:
+        - `Drink`
+    """
+    res = Drink(doc['user_email'], doc['name'], doc['ingredients'])
+    for k, v in doc.items():
+      setattr(res, k, v)
+    res.review_ids = set(res.review_ids)
+    return res
+
+  def getDrink(self, _id: ObjectId) -> Drink or None:
+    """Gets a Drink by _id.
+      
+      Returns:
+        - `Drink or None`: Drink object if the Drink exists. `None` otherwise.
+    """
+    res = self.client.drinks.find_one({ '_id': _id })
+    return self.toDrink(res) if res else None
+
+  def createDrink(self, user_email: str, name: str, ingredients: list) -> Drink:
+    """Creates a Drink in the db and returns it.
+
+      Arguments:
+        - user_email { str }
+        - ingredients { list }
+      
+      Returns:
+        - `Drink`: The newly created Drink. If the drink already exists, returns it.
+    """
+    existing_drink = self.getDrink({ 'user_email': user_email, 'name': name })
+    if existing_drink is not None:
+      return existing_drink
+
+    # create new Drink
+    temp = Drink(user_email, name, ingredients)
+    doc = vars(temp).copy()
+    doc['review_ids'] = list(doc['review_ids'])
+
+    temp._id = self.client.drinks.insert_one(doc).inserted_id
+    return temp
+  
+  def attachReview(self, drink_id: ObjectId, review_id: ObjectId, hint: Drink = None):
+    """Attach a review to the drink specified by _id.
+
+      Arguments:
+        - drink_id { ObjectId }
+        - review_id { ObjectId }
+        - hint { Drink, optional }:Providing a User for hint will prevent getting the User
+          from the database. Defaults to None.
+
+      Raises:
+        - `KeyError`: raised if User with the given email (email param or hint.email) DNE.
+    """
+    # grab the user
+    target = hint if hint is not None else self.getDrink(drink_id)
+    if target is None:
+      raise KeyError(f"Drink with {drink_id} DNE")
+    
+    # attempt to update db
+    res = self.client.drinks.update_one(
+      { '_id': target._id },
+      { '$addToSet': { 'review_ids': review_id } }
+    )
+
+    if res.modified_count == 0:
+      raise KeyError(f"Drink with {drink_id} DNE")
+    
+    target.add_review(review_id)
+
+  def detachReview(self, drink_id: ObjectId, review_id: ObjectId, hint: Drink = None):
+    """Detaches the review with the associated _id from this drink.
+
+      Arguments:
+        - drink_id { ObjectId }
+        - review_id: { ObjectId }
+        - hint { Drink, optional }: Providing a User for hint will prevent getting the User
+          from the database. Defaults to None.
+
+      Raises:
+        - `KeyError`: raised if User with the given email (email param or hint.email) DNE.
+    """
+    # grab the user 
+    target = hint if hint is not None else self.getDrink(drink_id)
+    if target is None:
+      raise KeyError(f"Drink with drink_id {drink_id} DNE")
+
+    # attempt to update db
+    res = self.client.drinks.update_one(
+      { '_id': target._id },
+      { '$pullAll': { "review_ids": review_id } }
+    )
+    # check if update failed
+    if res.modified_count == 0:
+      raise KeyError(f"Drink with drink_id {drink_id} DNE")
+
+    target.remove_review(review_id)
+
+  def getReviews(self, drink_id: ObjectId) -> list[Review]:
+    """Returns a list of Reviews attached to this drink.
+
+      Arguments:
+        - drink_id { ObjectId }
+    """
+    qres = self.client.drinks({ '_id': drink_id }, { '_id': 0, 'review_ids': 1 })
+
+    if qres is None:
+      raise KeyError(f"Drink with drink_id {drink_id} DNE")
+
+    _ids = qres["review_ids"]
+    res = []
+    for item in self.client.reviews.find({ '_id': { '$in': _ids } }):
+      res.append(self.toReview(item))
+    
+    return res
+
+  def updateDrink(self, _id: ObjectId, fields: dict) -> Drink or None:
+    """Updates the fields of Drink by _id. If DNE, returns `None`.
+
+      Arguments:
+        - _id { ObjectId }
+        - fields { dict }: (k, v) pairs of the fields to be updated and their new values
+
+      Returns:
+        - `Drink`: the updated Drink.
+        - `None`: if Fields is an empty dict or Drink DNE.
+    """
+    if len(fields) == 0:
+      return None
+    
+    # attempt to update in db
+    res = self.client.drinks.find_one_and_update(
+      { '_id': _id }, { '$set': fields },
+      return_document = ReturnDocument.AFTER
+    )
+
+    return self.toDrink(res) if res else None
+
+  def deleteDrink(self, _id: ObjectId) -> bool:
+    """Deletes a Drink by _id in the db.
+
+      Arguments:
+        - _id { ObjectId }
+
+      Returns:
+          - `bool`: True if the Drink was removed, False otherwise.
+    """
+    res = self.client.drinks.delete_one({ '_id': _id })
+    return bool(res.deleted_count)
+
   # endregion
 
 # region sample code

@@ -3,17 +3,17 @@ from pprint import pformat
 
 class Drink:
 
-  def __init__(self, user_id: ObjectId, ingredients: list) -> None:
+  def __init__(self, user_email: str, name: str, ingredients: list) -> None:
     """Create a Drink according to our system diagram.
 
-        Arguments:
-            - `user_id` { ObjectId }
-                - The _id of the user who created this Drink.
-            - `ingredients` { list }
-                - A 2D list where each sublist contains two strings: the ingredient and the unit.
-                  For example: `[["strawberry", "4"], ["caramel", "2 pump"]]`
+      Arguments:
+        - user_id { ObjectId }: the _id of the user who created this Drink
+        - ingredients { list }: a 2D list where each sublist contains two strings:
+          the ingredient and the unit. For example: 
+          `[["strawberry", "4"], ["caramel", "2 pump"]]`
     """
-    self.user_id = user_id # _id of creator
+    self.user_email = user_email # _id of creator
+    self.name = name # name of this drink
     self.review_ids = set()  # _ids of reviews
     self.ingredients = ingredients
     self.rating = -1 # set to -1 for no reviews with ratings, increments of .5
@@ -25,7 +25,7 @@ class Drink:
     data = pformat(vars(self))[1:-1]
     return f"Drink <\n {data}\n>"
 
-  def add_review(self, _id: ObjectId, rating: int) -> None:
+  def add_review(self, _id: ObjectId) -> None:
     """Add a review to this drink by _id.
     """
     # error check
@@ -37,18 +37,16 @@ class Drink:
   def remove_review(self, _id: ObjectId) -> bool:
     """Remove a review from this drink by _id.
 
-        Raises:
-            - `TypeError`
-                - Raised is _id is not an ObjectId.
+      Raises:
+        - `TypeError`: raised is _id is not an ObjectId.
 
-        Returns:
-            - bool
-                - True if the drink was removed; False otherwise.
+      Returns:
+        - `bool`: True if the drink was removed; False otherwise.
     """
     # error check
     if not isinstance(_id, ObjectId):
       raise TypeError("`_id` must be on ObjectId")
-    if _id not in self.review_ids:
+    elif _id not in self.review_ids:
       return False
 
     self.review_ids.remove(_id)
@@ -57,10 +55,11 @@ class Drink:
   def update_rating(self, val: int) -> None:
     # calc the new avg
     self.sum += val
-    self.avg = 0.5 * round((self.sum / len(self.review_ids)) / 0.5)
+    self.rating = 0.5 * round((self.sum / len(self.review_ids)) / 0.5)
 
   def toJSON(self) -> dict:
     res = vars(self)
-    res['user_id'] = str(self.user_id)
+    if res['_id'] is not None:
+      res['_id'] = str(res['_id'])
     res['review_ids'] = [str(_id) for _id in self.review_ids]
     return res
