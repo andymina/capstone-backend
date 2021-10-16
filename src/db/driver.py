@@ -5,7 +5,7 @@ from pymongo.database import Database
 from models import User, Review, Drink
 
 class DBdriver:
-  def __init__(self) -> None:
+  def __init__(self, logger) -> None:
     """A driver used to make writing and reading from the database easier.
 
       Raises:
@@ -16,7 +16,7 @@ class DBdriver:
     try:
       # ping is cheap and doesn't require auth
       client.admin.command('ping')
-      print('Connected to MongoDB')
+      logger.info('Connected to MongoDB')
     except pymongo.ConnectionFailure:
       raise ConnectionError('Failed to connect to MongoDB')
     

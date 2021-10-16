@@ -1,14 +1,16 @@
-from dotenv import load_dotenv
-
-# load env vars
-msg = '.env loaded' if load_dotenv() else 'Failed to load .env'
-print(msg)
-
 from flask import Flask
-from blueprints import UserBP, DrinkBP, ReviewBP
+from dotenv import load_dotenv
 
 # init flask
 app = Flask(__name__)
+
+# load env vars
+if not load_dotenv():
+  app.logger.error('FATAL: Failed to load .env')
+  exit()
+app.logger.info('.env loaded')
+
+from blueprints import UserBP, DrinkBP, ReviewBP
 
 # register blueprints
 app.register_blueprint(UserBP.api)
