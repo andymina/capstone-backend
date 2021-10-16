@@ -55,7 +55,7 @@ class Drink:
   def update_rating(self, val: int) -> None:
     # calc the new avg
     self.sum += val
-    self.avg = 0.5 * round((self.sum / len(self.review_ids)) / 0.5)
+    self.rating = 0.5 * round((self.sum / len(self.review_ids)) / 0.5)
 
   def toJSON(self) -> dict:
     res = vars(self)
