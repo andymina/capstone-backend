@@ -3,7 +3,7 @@ from pprint import pformat
 
 class Drink:
 
-  def __init__(self, user_email: str, ingredients: list) -> None:
+  def __init__(self, user_email: str, name: str, ingredients: list) -> None:
     """Create a Drink according to our system diagram.
 
       Arguments:
@@ -13,6 +13,7 @@ class Drink:
           `[["strawberry", "4"], ["caramel", "2 pump"]]`
     """
     self.user_email = user_email # _id of creator
+    self.name = name # name of this drink
     self.review_ids = set()  # _ids of reviews
     self.ingredients = ingredients
     self.rating = -1 # set to -1 for no reviews with ratings, increments of .5
@@ -24,7 +25,7 @@ class Drink:
     data = pformat(vars(self))[1:-1]
     return f"Drink <\n {data}\n>"
 
-  def add_review(self, _id: ObjectId, rating: int) -> None:
+  def add_review(self, _id: ObjectId) -> None:
     """Add a review to this drink by _id.
     """
     # error check
