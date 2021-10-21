@@ -18,4 +18,10 @@ app.register_blueprint(DrinkBP.api)
 app.register_blueprint(ReviewBP.api)
 
 if __name__ == "__main__":
-  app.run(debug = True)
+  from os import environ
+  app.run(
+    debug = True,
+    threaded = True,
+    host = '0.0.0.0',
+    port = environ.get('PORT', 5000)
+  )
