@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 # init flask
 app = Flask(__name__)
-cors = CORS(app)
+cors = CORS(app, origins=['*'])
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 # load env vars
