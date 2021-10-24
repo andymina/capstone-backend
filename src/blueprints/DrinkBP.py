@@ -1,7 +1,10 @@
-from flask import Blueprint
+from flask import Blueprint, request
+from db.driver import DBdriver
+from logging import getLogger
 
 api = Blueprint('DrinkAPI', __name__)
+db = DBdriver(getLogger())
 
-@api.route("/drink")
-def hello_world():
-    return { "data": "Hello from DrinkAPI" }
+@api.route("/get-drink", methods = ["GET"])
+def getDrink():
+    return db.getDrink(request.args["_id"])

@@ -25,16 +25,19 @@ class Drink:
     data = pformat(vars(self))[1:-1]
     return f"Drink <\n {data}\n>"
 
-  def add_review(self, _id: ObjectId) -> None:
+  def add_review(self, _id: ObjectId, val: int) -> None:
     """Add a review to this drink by _id.
     """
     # error check
     if not isinstance(_id, ObjectId):
       raise TypeError("`id` must be an ObjectId")
     
+    # add review
     self.review_ids.add(_id)
+    # calc the new avg
+    self.update_rating(val)
 
-  def remove_review(self, _id: ObjectId) -> bool:
+  def remove_review(self, _id: ObjectId, val: int) -> bool:
     """Remove a review from this drink by _id.
 
       Raises:
@@ -49,7 +52,10 @@ class Drink:
     elif _id not in self.review_ids:
       return False
 
+    # remove it
     self.review_ids.remove(_id)
+    # calc the new avg
+    self.update_rating(-val)
     return True
 
   def update_rating(self, val: int) -> None:
