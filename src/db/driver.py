@@ -167,6 +167,7 @@ class DBdriver:
 
     # attach it to a drink
     self.attachReview(drink_id, temp._id, rating)
+    self.attachItem('review', user_email, temp._id)
     return temp
 
   def deleteReview(self, review_id: ObjectId) -> bool:

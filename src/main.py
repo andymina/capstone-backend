@@ -20,16 +20,6 @@ app.register_blueprint(UserBP.api)
 app.register_blueprint(DrinkBP.api)
 app.register_blueprint(ReviewBP.api)
 
-# region live test
-from db.driver import DBdriver
-d = DBdriver(app.logger)
-andy = d.getUser('andy@gmail.com')
-jing = d.getUser('jing@gmail.com')
-drink = d.createDrink(andy.email, "Andy's Drink", [["strawberry", "4"]])
-review = d.createReview(jing.email, drink._id, "It's great!", 5)
-
-# endregion
-
 if __name__ == "__main__":
   from os import environ
   app.run(
