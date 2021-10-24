@@ -1,11 +1,8 @@
 from flask import Flask
-from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv  
 
 # init flask
 app = Flask(__name__)
-cors = CORS(app, origins=['*'])
-app.config['CORS_HEADERS'] = 'Content-Type'
 
 # load env vars
 if not load_dotenv():
