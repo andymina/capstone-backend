@@ -7,6 +7,6 @@ api = Blueprint('UserAPI', __name__)
 db = DBdriver(getLogger())
 
 @api.route("/user")
-@cross_origin
+@cross_origin()
 def hello_world():
     return { "data": "Hello from UserAPI" }
