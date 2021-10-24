@@ -58,7 +58,7 @@ class Drink:
     self.update_rating(-val)
     return True
 
-  def update_rating(self, val: int) -> None:
+  def update_rating(self, val: int):
     # calc the new avg
     self.sum += val
     self.rating = 0.5 * round((self.sum / len(self.review_ids)) / 0.5)

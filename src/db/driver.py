@@ -100,56 +100,6 @@ class DBdriver:
       res.append(self.serializers[type](item))
     return res
 
-  def attachItem(self, type: str, email: str, _id: ObjectId):
-    """Attach an item to the User given the user's email and item's _id.
-
-      Arguments:
-        - type { str }: Must be one of ['drink', 'favorite', 'review'].
-        - email { str }
-        - _id { ObjectId }
-
-      Raises:
-         - `KeyError`: raised if User with the given email (email param or hint.email) DNE.
-    """
-    # grab the user
-
-    # attempt to update db
-    res = self.client.users.find_one_and_update(
-      { 'email': email },
-      { '$addToSet': { f"{type}_ids": _id } }
-    )
-    # check if update failed
-    if not res:
-      raise KeyError(f"User with email `{email}` DNE")
-
-    # convert to user
-    self.toUser(res).add_item(type, _id)
-
-  def detachItem(self, type: str, email: str, _id: ObjectId):
-    """Optimized way to detach _id from user's drinks, favorites, or reviews.
-
-      Arguments:
-        - type { str }: Must be one of ['drink', 'favorite', 'review']
-        - email { str }
-        - _id { ObjectId }
-        - hint { User, optional }: Providing a User for hint will prevent getting the User
-          from the database. Defaults to None.
-
-      Raises:
-         - `KeyError`: raised if User with the given email (email param or hint.email) DNE.
-    """
-    # attempt to update db
-    res = self.client.users.find_one_and_update(
-      { 'email': email },
-      { '$pullAll': { f"{type}_ids": _id } }
-    )
-    # check if update failed
-    if not res:
-      raise KeyError(f"User with email `{email}` DNE")
-
-    # convert to user
-    self.toUser(res).remove_item(type, _id)
-
   def updateUser(self, email: str, fields: dict) -> User or None:
     """Updates the fields of User by email. If DNE, returns `None`.
 
@@ -208,7 +158,7 @@ class DBdriver:
     """
     # check if the review exists
     existing_review = self.client.reviews.find_one({ 'user_email': user_email, 'drink_id': drink_id })
-    if existing_review is not None:
+    if existing_review:
       return self.toReview(existing_review)
 
     # create the Review in the DB
@@ -216,7 +166,7 @@ class DBdriver:
     temp._id = self.client.reviews.insert_one(vars(temp)).inserted_id
 
     # attach it to a drink
-    self.attachReview(drink_id, temp._id)
+    self.attachReview(drink_id, temp._id, rating)
     return temp
 
   def deleteReview(self, review_id: ObjectId) -> bool:
@@ -261,8 +211,8 @@ class DBdriver:
       Returns:
         - `Drink`: The newly created Drink. If the drink already exists, returns it.
     """
-    existing_drink = self.getDrink({ 'user_email': user_email, 'name': name })
-    if existing_drink is not None:
+    existing_drink = self.client.drinks.find_one({ 'user_email': user_email, 'name': name })
+    if existing_drink:
       return existing_drink
 
     # create new Drink
@@ -283,7 +233,7 @@ class DBdriver:
       Arguments:
         - drink_id { ObjectId }
     """
-    qres = self.client.drinks({ '_id': drink_id }, { '_id': 0, 'review_ids': 1 })
+    qres = self.client.drinks.find_one({ '_id': drink_id }, { '_id': 0, 'review_ids': 1 })
 
     if qres is None:
       raise KeyError(f"Drink with drink_id {drink_id} DNE")
@@ -311,7 +261,7 @@ class DBdriver:
     
     # attempt to update in db
     res = self.client.drinks.find_one_and_update(
-      { '_id': _id }, { '$set': fields },
+      { "_id": _id }, { "$set": fields },
       return_document = ReturnDocument.AFTER
     )
 
@@ -326,16 +276,16 @@ class DBdriver:
       Returns:
           - `bool`: True if the Drink was removed, False otherwise.
     """
-    res = self.client.drinks.find_one_and_delete({ '_id': _id })
+    # delete the drink from the DB
+    res = self.client.drinks.find_one_and_delete({ "_id": _id })
     if not res:
       return False
     
     # delete the drink from the user
-    self.detachItem('drink', res['user_email'], _id)
+    self.detachItem("drink", res["user_email"], _id)
 
     # remove reviews attached to this drink
-    # for r in res['review_ids']:
-    #   self.client.reviews.delete_man
+    self.client.reviews.delete_many({ "_id": { "$in": res["review_ids"] } })
     return True
 
   # endregion
@@ -396,8 +346,7 @@ class DBdriver:
     return res
 
   def attachReview(
-    self, drink_id: ObjectId, review_id: ObjectId,
-    drink_hint: Drink = None, review_hint: Review = None
+    self, drink_id: ObjectId, review_id: ObjectId, rating: int
   ):
     """Attach a review to the drink specified by _id.
 
@@ -412,25 +361,19 @@ class DBdriver:
       Raises:
         - `KeyError`: raised if Drink with the given _id DNE.
     """
-    # grab the drink and review
-    drink = drink_hint if drink_hint else self.getDrink(drink_id)
-    review = review_hint if review_hint else self.getReview(review_id)
-
-    if drink is None:
-      raise KeyError(f"Drink with {drink_id} DNE")
-
     # attempt to update db
-    res = self.client.drinks.find_one_and_update(
+    drink = self.client.drinks.find_one_and_update(
       { '_id': drink_id },
       { '$addToSet': { 'review_ids': review_id } },
       return_document = ReturnDocument.AFTER
     )
 
-    if not res:
+    if not drink:
       raise KeyError(f"Drink with {drink_id} DNE")
     
     # update the local drink
-    drink.add_review(review_id, review.rating)
+    drink = self.toDrink(drink)
+    drink.update_rating(rating)
     self.updateDrink(drink_id, { 'rating': drink.rating })
 
   def detachReview(self, drink_id: ObjectId, review_id: ObjectId, rating: int):
@@ -456,8 +399,58 @@ class DBdriver:
 
     # update the local drink
     drink = self.toDrink(drink)
-    drink.remove_review(review_id, rating)
+    drink.update_rating(-rating)
     self.updateDrink(drink_id, { 'rating': drink.rating })
+
+  def attachItem(self, type: str, email: str, _id: ObjectId):
+    """Attach an item to the User given the user's email and item's _id.
+
+      Arguments:
+        - type { str }: Must be one of ['drink', 'favorite', 'review'].
+        - email { str }
+        - _id { ObjectId }
+
+      Raises:
+         - `KeyError`: raised if User with the given email (email param or hint.email) DNE.
+    """
+    # grab the user
+
+    # attempt to update db
+    res = self.client.users.find_one_and_update(
+      { 'email': email },
+      { '$addToSet': { f"{type}_ids": _id } }
+    )
+    # check if update failed
+    if not res:
+      raise KeyError(f"User with email `{email}` DNE")
+
+    # convert to user
+    self.toUser(res).add_item(type, _id)
+
+  def detachItem(self, type: str, email: str, _id: ObjectId):
+    """Optimized way to detach _id from user's drinks, favorites, or reviews.
+
+      Arguments:
+        - type { str }: Must be one of ['drink', 'favorite', 'review']
+        - email { str }
+        - _id { ObjectId }
+        - hint { User, optional }: Providing a User for hint will prevent getting the User
+          from the database. Defaults to None.
+
+      Raises:
+         - `KeyError`: raised if User with the given email (email param or hint.email) DNE.
+    """
+    # attempt to update db
+    res = self.client.users.find_one_and_update(
+      { 'email': email },
+      { '$pullAll': { f"{type}_ids": _id } }
+    )
+    # check if update failed
+    if not res:
+      raise KeyError(f"User with email `{email}` DNE")
+
+    # convert to user
+    self.toUser(res).remove_item(type, _id)
 
   def seed(self) -> None:
     # create four users
@@ -516,14 +509,4 @@ class DBdriver:
       2
     )
 
-
-
   # endregion
-
-# region sample code
-# d = DBdriver()
-
-# user
-# andy = d.createUser('andy', 'mina', 'andy@gmail.com', '123')
-
-# endregion
