@@ -57,7 +57,7 @@ class DBdriver:
     """
     # check if this user exists and return it
     existing_user = self.getUser(email)
-    if existing_user is not None:
+    if existing_user:
       return existing_user
 
     # create a new user
@@ -217,7 +217,7 @@ class DBdriver:
     """
     existing_drink = self.client.drinks.find_one({ 'user_email': user_email, 'name': name })
     if existing_drink:
-      return existing_drink
+      return self.toDrink(existing_drink)
 
     # create new Drink
     temp = Drink(user_email, name, ingredients)
