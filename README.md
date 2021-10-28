@@ -53,11 +53,11 @@ the parameter and `name` is the internal name for the parameter. For example,
 
 ### User Model
 
-```typescript
+```TSX
 class User {
-    fname: string = "";              // first name
-    lname: string = "";              // last name
-    email: string = "";              // email, must be unique
+    fname: String;              // first name
+    lname: String;              // last name
+    email: String;              // email, must be unique
     pw: string,                 // password
     review_ids: Array<string>,  // ObjectIds of review created
     drink_ids: Array<string>,   // ObjectIds of drinks created
