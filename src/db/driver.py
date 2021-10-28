@@ -1,23 +1,26 @@
-import os, pymongo
+from os import environ
 from bson import ObjectId
-from pymongo import ReturnDocument
+from pymongo import ReturnDocument, MongoClient
 from pymongo.database import Database
 from models import User, Review, Drink
+from logging import getLogger
+import __main__
 
 class DBdriver:
-  def __init__(self, logger) -> None:
+  def __init__(self) -> None:
     """A driver used to make writing and reading from the database easier.
 
       Raises:
         - `ConnectionError`: Raised if the driver failed to connect to MongoDB
     """
-    client = pymongo.MongoClient(os.environ['MONGODB_URI'])
+    client = MongoClient(environ['MONGODB_URI'])
+    logger = getLogger(__main__.__name__)
 
     try:
       # ping is cheap and doesn't require auth
       client.admin.command('ping')
       logger.info('Connected to MongoDB')
-    except pymongo.ConnectionFailure:
+    except:
       raise ConnectionError('Failed to connect to MongoDB')
     
     # connect to the capstone database

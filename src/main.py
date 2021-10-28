@@ -1,8 +1,12 @@
+from re import A
 from flask import Flask
+from flask_cors import CORS
+from flask_restful import Api
 from dotenv import load_dotenv  
 
-# init flask
-app = Flask(__name__)
+app = Flask(__name__) # init flask
+CORS(app) # CORS friendly
+api = Api(app) # prepare to accept resources
 
 # load env vars
 if not load_dotenv():
@@ -10,12 +14,7 @@ if not load_dotenv():
   exit()
 app.logger.info('.env loaded')
 
-from blueprints import UserBP, DrinkBP, ReviewBP
-
-# register blueprints
-app.register_blueprint(UserBP.api)
-app.register_blueprint(DrinkBP.api)
-app.register_blueprint(ReviewBP.api)
+# TODO: ADD RESOURCES HERE
 
 if __name__ == "__main__":
   from os import environ
