@@ -53,21 +53,21 @@ the parameter and `name` is the internal name for the parameter. For example,
 
 ### User Model
 
-```TSX
+```javascript
 class User {
-    fname: String;              // first name
-    lname: String;              // last name
-    email: String;              // email, must be unique
-    pw: string,                 // password
-    review_ids: Array<string>,  // ObjectIds of review created
-    drink_ids: Array<string>,   // ObjectIds of drinks created
-    favorite_ids: Array<string> // ObjectIds of drinks favorited
+    fname: String,              // first name
+    lname: String,              // last name
+    email: String,              // email, must be unique
+    pw: String,                 // password
+    review_ids: Array[String],  // ObjectIds of review created
+    drink_ids: Array[String],   // ObjectIds of drinks created
+    favorite_ids: Array[String] // ObjectIds of drinks favorited
 }
 ```
 
 ### Drink Model
 
-```typescript
+```javascript
 class Drink {
     user_email: String,                 // creator's email
     name: String,                       // name of the drink
