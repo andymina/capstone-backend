@@ -55,9 +55,9 @@ the parameter and `name` is the internal name for the parameter. For example,
 
 ```typescript
 class User {
-    fname: string,              // first name
-    lname: string,              // last name
-    email: string,              // email, must be unique
+    fname: string = "";              // first name
+    lname: string = "";              // last name
+    email: string = "";              // email, must be unique
     pw: string,                 // password
     review_ids: Array<string>,  // ObjectIds of review created
     drink_ids: Array<string>,   // ObjectIds of drinks created
