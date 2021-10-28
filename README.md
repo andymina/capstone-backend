@@ -9,7 +9,7 @@
   - [Drink](#Drink-Model)
   - [Review](#Review-Model)
 - [User API](#User-API)
-([Single](#Single-User-users-string-email), [Multiple](#Multiple-Users))
+([Single](#single-user-usersstringemail), [Multiple](#Multiple-Users))
 - [Drink API](#Drink-API)
 ([Single](#Single-Drink), [Multiple](#Multiple-Drinks))
 - [Review API](#Review-API)
