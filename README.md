@@ -2,18 +2,18 @@
 
 ## Table of Contents
 
-- [Summary](#Summary)
-- [Route Parameters](#Route-Parameters)
-- [Data Modeling](#Data-Modeling)
-  - [User](#User-Model)
-  - [Drink](#Drink-Model)
-  - [Review](#Review-Model)
-- [User API](#User-API)
-([Single](#single-user-usersstringemail), [Multiple](#Multiple-Users))
-- [Drink API](#Drink-API)
-([Single](#Single-Drink), [Multiple](#Multiple-Drinks))
-- [Review API](#Review-API)
-([Single](#Single-Review), [Multiple](#Multiple-Reviews))
+- [Summary](#summary)
+- [Route Parameters](#route-parameters)
+- [Data Modeling](#data-modeling)
+  - [User](#user-model)
+  - [Drink](#drink-model)
+  - [Review](#review-model)
+- [User API](#user-api)
+([Single](#single-user-usersstringemail), [Multiple](#multiple-users-users))
+- [Drink API](#drink-api)
+([Single](#single-drink-drinksstring_id), [Multiple](#multiple-drinks-drinks))
+- [Review API](#review-api)
+([Single](#single-review-reviewsstring_id), [Multiple](#multiple-reviews-reviews))
 
 ## Summary
 
