@@ -14,6 +14,19 @@
 ([Single](#single-drink-drinksstring_id), [Multiple](#multiple-drinks-drinks))
 - [Review API](#review-api)
 ([Single](#single-review-reviewsstring_id), [Multiple](#multiple-reviews-reviews))
+- [Completed APIs](#completed-apis)
+
+## Completed APIs
+
+- User
+  - [ ] Single
+  - [ ] Multiple
+- Drink
+  - [x] Single
+  - [ ] Multiple
+- Review
+  - [ ] Single
+  - [ ] Multiple
 
 ## Summary
 
@@ -213,6 +226,7 @@ this drink from the user who created it.
 
 - Route
   - `<String> _id`: ObjectId of the drink to be deleted.
+  - `<String> specifier`: Specifies where this drink 
 
 **Returns**: the `_id` of the removed Drink. `null` if the corresponding
 drink DNE.
