@@ -22,7 +22,7 @@ class SingleDrink(Resource):
     args = self.parser.parse_args()
 
     # error handling
-    if not args["fields"]:
+    if args["fields"] is None:
       return { "data": { "err": "Missing fields parameter." } }
     elif not len(args["fields"]):
       return { "data": { "err": "Parameter 'fields' cannot be empty." } }
