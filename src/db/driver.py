@@ -270,11 +270,8 @@ class DBdriver:
 
       Returns:
         - `Drink`: the updated Drink.
-        - `None`: if Fields is an empty dict or Drink DNE.
-    """
-    if len(fields) == 0:
-      return None
-    
+        - `None`: if Drink DNE.
+    """    
     # attempt to update in db
     res = self.client.drinks.find_one_and_update(
       { "_id": _id }, { "$set": fields },

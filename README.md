@@ -56,6 +56,21 @@ OR
 }
 ```
 
+## Error Handling
+
+If an API endpoint encounters an unexpected error during execution, it will return an error message
+within the response. If the API endpoint specifies that `null` will be returned, then it will be
+in `res` of the `data` object.
+
+```
+{
+  "data": {
+    "res": as specified by the API endpoint,
+    "err": String
+  }
+}
+```
+
 ## Route Parameters
 
 Route parameters are marked by `<type:name>` where `type` is the data type of
