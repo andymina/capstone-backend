@@ -1,4 +1,3 @@
-from typing_extensions import Required
 from bson import ObjectId
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
