@@ -16,14 +16,16 @@ class SingleDrink(Resource):
   def get(self, _id: str) -> tuple[dict, int]:
     # search for _id in DBdriver
     res = self.db.getDrink(ObjectId(_id))
-    return { "data": res }, 200 if res else self.error_response
+    return self.error_response if not res else { "data": res.toJSON() }, 200
 
   def put(self, _id: str) -> tuple[dict, int]:
     args = self.parser.parse_args()
-    res = self.db.updateDrink(ObjectId(_id), args['fields'])
-    return { "data": res }, 200 if res else self.error_response
+    if not args["fields"]:
+      return { "data": { "err": "Missing fields parameter." } }
+    res = self.db.updateDrink(ObjectId(_id), args["fields"])
+    return self.error_response if not res else { "data": res.toJSON() }, 200
 
   def delete(self, _id: str) -> tuple[dict, int]:
     args = self.parser.parse_args()
     res = self.db.deleteDrink(ObjectId(_id))
-    return { "data": _id }, 200 if res else self.error_response
+    return self.error_response if not res else { "data": res }, 200

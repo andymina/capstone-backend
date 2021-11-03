@@ -407,7 +407,7 @@ class DBdriver:
     # attempt to update db
     drink = self.client.drinks.find_one_and_update(
       { '_id': drink_id },
-      { '$pullAll': { "review_ids": review_id } }
+      { '$pullAll': { "review_ids": [review_id] } }
     )
 
     if not drink:
@@ -459,7 +459,7 @@ class DBdriver:
     # attempt to update db
     res = self.client.users.find_one_and_update(
       { 'email': email },
-      { '$pullAll': { f"{type}_ids": _id } }
+      { '$pullAll': { f"{type}_ids": [_id] } }
     )
     # check if update failed
     if not res:
