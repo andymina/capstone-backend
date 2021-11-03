@@ -5,7 +5,12 @@ from flask_restful import Resource, reqparse
 class SingleDrink(Resource):
   def __init__(self) -> None:
     self.db = DBdriver()
-    self.drink_dne = { "data": { "res": None, "err": "Drink with that _id DNE" } }, 404
+    self.drink_dne = {
+      "data": {
+        "res": None,
+        "err": "Drink with that _id DNE"
+      }
+    }, 404
     self.parser = reqparse.RequestParser(bundle_errors = True)
     self.parser.add_argument(
       'fields',
