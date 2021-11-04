@@ -2,8 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
 from dotenv import load_dotenv  
-from resources import SingleUser, SingleDrink
-from dotenv import load_dotenv
+from resources import SingleUser, SingleDrink, SingleReview
 
 app = Flask(__name__) # init flask
 CORS(app) # CORS friendly
@@ -18,6 +17,7 @@ app.logger.info('.env loaded')
 # TODO: ADD RESOURCES HERE
 api.add_resource(SingleUser, "/users/<string:email>", endpoint = "user")
 api.add_resource(SingleDrink, "/drinks/<string:_id>", endpoint = "drink")
+api.add_resource(SingleReview, "/reviews/<string:_id>", endpoint = "review")
 
 if __name__ == "__main__":
   from os import environ
