@@ -1,1 +1,1 @@
-from .single import SingleUser, SingleDrink
+from .single import SingleUser, SingleDrink, SingleReview
