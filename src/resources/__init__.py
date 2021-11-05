@@ -1,2 +1,2 @@
 from .single import SingleUser, SingleDrink, SingleReview
-from .multiple import MultipleUser
+from .multiple import MultipleUser, MultipleDrink
