@@ -28,15 +28,13 @@ class SingleReview(Resource):
         res = self.db.updateReview(ObjectId(_id), args["fields"])
         return self.review_dne if not res else {
             "data: ": {
-                "review": Review,
-                "drink_rating": Number
+                res.toJSON(),
             }
         }, 200
 
     def delete(self, _id: str) -> tuple[dict, int]:
         res = self.db.deleteReview(ObjectId(_id))
         return self.review_dne if not res else { "data":{
-            "deleted": String,
-            "drink_rating": Number
+            res.toJSON(),
             }
         }, 200
