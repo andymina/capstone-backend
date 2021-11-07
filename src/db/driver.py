@@ -336,6 +336,24 @@ class DBdriver:
     self.client.reviews.delete_many({ "_id": { "$in": res["review_ids"] } })
     return True
 
+  def sampleDrinks(self, size: int) -> list[Drink]:
+    """Returns size random drinks from the database
+
+      Arguments:
+        - size { int }: the number of random drinks to be retrieved
+
+      Raises:
+        - `ValueError`: Raised if size is not a non-zero positive integer.
+      
+      Returns:
+        - `list[Drink]`: A list of random drinks.
+    """
+    if size < 0:
+      raise ValueError("Parameter `size` must be a positive non-zero integer.")
+
+    res = self.client.drinks.aggregate([{ "$sample": { "size": size } }])
+    return [ self.toDrink(drink) for drink in res ]
+
   # endregion
 
   # region internal functions

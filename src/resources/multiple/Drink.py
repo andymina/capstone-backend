@@ -1,3 +1,4 @@
+from os import kill
 from bson import ObjectId
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
@@ -32,31 +33,37 @@ class MultipleDrink(Resource):
     self.parser = reqparse.RequestParser(bundle_errors = True)
 
   def get(self) -> tuple[dict, int]:
-    """Gets a list of drinks given a list of _ids.
+    """Gets a list of drinks given a list of _ids. If the parameter `sample` is provided,
+      returns a sample of N drinks in the database. If neiher `sample` nor `_ids` is provided,
+      returns a sample of 10 drinks in the database.
 
       Arguments:
         - `_ids` { list[str] } [API]: list of _ids for drinks
+        - `sample` { int } [API]: number of drinks to sample from the database
       
       Returns:
         - `tuple[dict, int]`: Returns a list of the corresponding drink objects. If a drink
-          with the corresponding _id DNE, `None` is returned in its place. Returns an errmsg if _ids
-          parameter is missing or empty.
+          with the corresponding _id DNE, `None` is returned in its place. Returns an errmsg
+          if _ids parameter is missing or empty.
     """
     # add args to the parser
-    self.parser.add_argument('_ids', type = list)
+    self.parser.add_argument("_ids", type = str, action = "append")
+    self.parser.add_argument("sample", type = int)
     # grab args
     args = self.parser.parse_args()
     
-    # error handling 
-    if args["_ids"] is None:
-      return { "data": { "err": "Parameter `_ids` required." } }, 400
-    elif not len(args["_ids"]):
-      return { "data": { "err": "Parameter `_ids` cannot be empty." } }, 400
-
-    res = [ self.db.getDrink(ObjectId(_id)).toJSON() for _id in args["_ids"] ]
+    # error handling and res 
+    if args["_ids"] is not None and args["sample"] is not None: # both exist
+      return { "data": { "err": "Cannot pass both _ids and sample parameters; choose one." } }, 400
+    elif args["_ids"] is not None: # _ids but not sample
+      if not len(args["_ids"]):
+        return { "data": { "err": "Parameter `_ids` cannot be empty." } }, 400
+      res = [ self.db.getDrink(ObjectId(_id)).toJSON() for _id in args["_ids"] ]
+    else: # sample may or may not exist
+      sample = 10 if args["sample"] is None else args["sample"]
+      res = [ drink.toJSON() for drink in self.db.sampleDrinks(sample) ]
     
     return { "data": res }, 200
-
 
   def post(self) -> tuple[dict, int]:
     """Creates a Drink given the necessary data to make a drink.
@@ -74,7 +81,7 @@ class MultipleDrink(Resource):
     # add args to the parser
     self.parser.add_argument('user_email', type = str)
     self.parser.add_argument('name', type = str)
-    self.parser.add_argument('ingredients', type = list)
+    self.parser.add_argument('ingredients', type = list, action= "append")
     # grab args
     args = self.parser.parse_args()
     params = (args['user_email'], args["name"], args["ingredients"])
@@ -88,7 +95,6 @@ class MultipleDrink(Resource):
 
     res = self.db.createDrink(email, name, ings)
     return { "data": res.toJSON() }, 200
-
 
   def delete(self) -> tuple[dict, int]:
     """Removes drinks from the database given a list of corresponding _ids.
@@ -105,7 +111,7 @@ class MultipleDrink(Resource):
         - `tuple[dict, int]`: [description]
     """
     # add args to the parser
-    self.parser.add_argument("_ids", type = list)
+    self.parser.add_argument("_ids", type = str, action = "append")
     # grab args
     args = self.parser.parse_args()
 
