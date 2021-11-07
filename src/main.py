@@ -17,7 +17,7 @@ app.logger.info('.env loaded')
 
 # TODO: ADD RESOURCES HERE
 api.add_resource(SingleUser, "/users/<string:email>", endpoint = "user")
-api.add_resource(SingleDrink, "/drink/<string:_id>", endpoint = "drink")
+api.add_resource(SingleDrink, "/drinks/<string:_id>", endpoint = "drink")
 
 if __name__ == "__main__":
   from os import environ
