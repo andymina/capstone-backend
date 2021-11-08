@@ -25,7 +25,7 @@ class Review:
   def toJSON(self) -> dict:
 
     res = vars(self)
-    res['user_id'] = str(self.user_id)
+    res['user_email'] = str(self.user_email)
     res['drink_id'] = str(self.drink_id)
     res['date'] = str(self.date)
 
