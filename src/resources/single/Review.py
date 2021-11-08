@@ -14,7 +14,7 @@ class SingleReview(Resource):
         self.parser.add_argument('fields', type = dict)
 
     def get(self, _id: str) -> tuple[dict, int]:
-        res = self.db.getReview(ObjectId(id))
+        res = self.db.getReview(ObjectId(_id))
         return self.review_dne if not res else { "data": res.toJSON() }, 200
 
     def put(self, _id: str) -> tuple[dict, int]:
@@ -26,15 +26,8 @@ class SingleReview(Resource):
             return { "data": { "err": "Parameter 'fields' cannot be empty." }}, 400
 
         res = self.db.updateReview(ObjectId(_id), args["fields"])
-        return self.review_dne if not res else {
-            "data: ": {
-                res.toJSON(),
-            }
-        }, 200
+        return self.review_dne if not res else { "data": res.toJSON(), }, 200
 
     def delete(self, _id: str) -> tuple[dict, int]:
         res = self.db.deleteReview(ObjectId(_id))
-        return self.review_dne if not res else { "data":{
-            res.toJSON(),
-            }
-        }, 200
+        return self.review_dne if not res else { "data": res.toJSON(), }, 200
