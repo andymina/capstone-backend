@@ -1,8 +1,8 @@
-from re import A
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
 from dotenv import load_dotenv  
+from resources import SingleUser
 
 app = Flask(__name__) # init flask
 CORS(app) # CORS friendly
@@ -15,6 +15,7 @@ if not load_dotenv():
 app.logger.info('.env loaded')
 
 # TODO: ADD RESOURCES HERE
+api.add_resource(SingleUser, "/users/<string:email>", endpoint = "user")
 
 if __name__ == "__main__":
   from os import environ
