@@ -85,4 +85,4 @@ class SingleDrink(Resource):
           of the deleted drink.
     """
     res = self.db.deleteDrink(ObjectId(_id))
-    return self.drink_dne if not res else { "data": res }, 200
+    return self.drink_dne if not res else { "data": _id }, 200
