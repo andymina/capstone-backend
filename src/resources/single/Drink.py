@@ -35,7 +35,6 @@ class SingleDrink(Resource):
       }
     }, 404
     self.parser = reqparse.RequestParser(bundle_errors = True)
-    self.parser.add_argument('fields', type = dict)
 
   def get(self, _id: str) -> tuple[dict, int]:
     """Gets the drink with the given _id.
@@ -63,6 +62,8 @@ class SingleDrink(Resource):
         - `tuple[dict, int]`: If fields is missing or empty, returns None. If the drink with 
         given _id DNE, returns None. Otherwise, returns the newly updated Drink.
     """
+    # grab args
+    self.parser.add_argument('fields', type = dict)
     args = self.parser.parse_args()
 
     # error handling
@@ -84,5 +85,5 @@ class SingleDrink(Resource):
         - `tuple[dict, int]`: If drink with the _id DNE, returns None. Otherwise returns the _id
           of the deleted drink.
     """
-    res = self.db.deleteDrink(ObjectId(_id))
-    return self.drink_dne if not res else { "data": _id }, 200
+    deleted = self.db.deleteDrink(ObjectId(_id))
+    return self.drink_dne if not deleted else { "data": _id }, 200
