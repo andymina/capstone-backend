@@ -230,7 +230,7 @@ to be updated, updates the drink in the database and returns the updated drink.
   - `<Object> fields`: key represents the property name to updated.
     value represents the new value.
 
-**Returns**: updated `Drink`.
+**Returns**: updated `Drink` if found. `null` if the drink DNE.
 
 ### DELETE
 
