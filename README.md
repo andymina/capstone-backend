@@ -258,8 +258,8 @@ corresponding drinks.
 - API
   - `<Array[String]> _ids`: list of drink ObjectIds to be retrieved.
 
-**Returns**: `Array[Drink]`. If no drinks are retrieved, returns an empty
-`Array`.
+**Returns**: `Array[Drink]`. If an `_id` is passed that doesn't correspond to a Drink,
+`null` is returned in it's place.
 
 ### POST
 
@@ -287,7 +287,7 @@ from the database.
   - `<Array[String]> _ids`: list of drink ObjectIds to be deleted
 
 **Returns**: `Array[String]` where each element is the ObjectId
-of a deleted drink. If no drinks are deleted, returns an empty `Array`.
+of a deleted drink. If a drink isn't deleted, `null` is returned in place of its `_id`.
 
 # Review API
 

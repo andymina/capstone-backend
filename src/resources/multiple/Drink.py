@@ -77,12 +77,12 @@ class MultipleDrink(Resource):
         - `tuple[dict, int]`: Returns the newly created Drink. If the Drink exists already,
           returns the existing drink.
     """
-    # add args to the parser
+    # grab args
     self.parser.add_argument('user_email', type = str)
     self.parser.add_argument('name', type = str)
     self.parser.add_argument('ingredients', type = list, action= "append")
-    # grab args
     args = self.parser.parse_args()
+    
     params = (args['user_email'], args["name"], args["ingredients"])
     email, name, ings = params
 
@@ -109,9 +109,8 @@ class MultipleDrink(Resource):
       Returns:
         - `tuple[dict, int]`: [description]
     """
-    # add args to the parser
-    self.parser.add_argument("_ids", type = str, action = "append")
     # grab args
+    self.parser.add_argument("_ids", type = str, action = "append")
     args = self.parser.parse_args()
 
     # error handling 
