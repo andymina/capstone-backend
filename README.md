@@ -172,7 +172,7 @@ user DNE.
 - API
   - `<Array[String]> emails`: list of emails of users to be retrieved.
 
-**Returns**: `Array[User]`. If no users are retrieved, returns an empty `Array`.
+**Returns**: `Array[User]`. If a user isn't retrieved, `null` is returned in its place.
 
 ### POST
 
@@ -200,7 +200,7 @@ database.
   - `<Array[String]> emails`: list of users to be deleted by email
 
 **Returns**: `Array[String]` where each element is the email of a deleted user.
-If no users are deleted, returns an empty `Array`.
+If a user isn't deleted, `null` is returned in its place.
 
 # Drink API
 
