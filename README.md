@@ -119,7 +119,7 @@ to be updated, updates the user in the database and returns the updated user.
   - `<Object> fields`: key represents the property name to updated.
     value represents the new value.
 
-**Returns**: updated `User`.
+**Returns**: updated `User`. `null` is user with the given email DNE.
 
 ### DELETE
 

@@ -77,5 +77,5 @@ class SingleUser(Resource):
         - `tuple[dict, int]`: If user with the email DNE, returns None.
           Otherwise returns the email of the deleted user.
     """
-    res = self.db.deleteUser(email)
-    return self.user_dne if not res else { "data": email }, 200
+    deleted = self.db.deleteUser(email)
+    return self.user_dne if not deleted else { "data": email }, 200
