@@ -1,4 +1,3 @@
-from typing_extensions import ParamSpec
 from bson import ObjectId
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
@@ -36,12 +35,12 @@ class MultipleReview(Resource):
 
       self.parser.add_argument('user_email', type = str)
       self.parser.add_argument('drink_id', type = str)
-      self.parser.add_argument('comment', type = str, action = "append")
+      self.parser.add_argument('comment', type = str)
       self.parser.add_argument('rating', type = str)
 
       args = self.parser.parse_args()
       params = (args['user_email'], args["drink_id", args["comment"]], args["rating"])
-      email, drink_id, comment, rating = ParamSpec
+      email, drink_id, comment, rating = params
 
       if None in params:
         return { "data": { "err": "Missing one of ['email', 'drink_id', 'comment', 'rating']" } }, 400
@@ -57,9 +56,9 @@ class MultipleReview(Resource):
       args = self.parser.parse_args()
 
       if args["_ids"] is None:
-        return { "data": { "err": "Parameter `_ids` required." } },400
+        return { "data": { "err": "Parameter `_ids` required." } }, 400
       elif not len(args["_ids"]):
-        return { "data": { "err": "{arameter `_ids` cannot be empty." } }, 400
+        return { "data": { "err": "parameter `_ids` cannot be empty." } }, 400
 
       res = [ _id for _id in args["_ids"] if self.db.deleteReview(Object_Id(_id)) ]
       return { "data": res }, 200
