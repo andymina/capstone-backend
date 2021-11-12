@@ -71,4 +71,4 @@ class SingleReview(Resource):
         """
 
         res = self.db.deleteReview(ObjectId(_id))
-        return self.review_dne if not res else { "data": res.toJSON(), }, 200
+        return {"data": None}, 404 if not res else { "data": _id}, 200
