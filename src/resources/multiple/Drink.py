@@ -23,12 +23,12 @@ class MultipleDrink(Resource):
   """
   def __init__(self) -> None:
     self.db = DBdriver()
-    self.drink_dne = {
+    self.drink_dne = ({
       "data": {
         "res": None,
         "err": "Drink with that _id DNE"
       }
-    }, 404
+    }, 404)
     self.parser = reqparse.RequestParser(bundle_errors = True)
 
   def get(self) -> tuple[dict, int]:
@@ -53,16 +53,16 @@ class MultipleDrink(Resource):
     
     # error handling and res 
     if args["_ids"] is not None and args["sample"] is not None: # both exist
-      return { "data": { "err": "Cannot pass both _ids and sample parameters; choose one." } }, 400
+      return ({ "data": { "err": "Cannot pass both _ids and sample parameters; choose one." } }, 400)
     elif args["_ids"] is not None: # _ids but not sample
       if not len(args["_ids"]):
-        return { "data": { "err": "Parameter `_ids` cannot be empty." } }, 400
+        return ({ "data": { "err": "Parameter `_ids` cannot be empty." } }, 400)
       res = [ self.db.getDrink(ObjectId(_id)).toJSON() for _id in args["_ids"] ]
     else: # sample may or may not exist
       sample = 10 if args["sample"] is None else args["sample"]
       res = [ drink.toJSON() for drink in self.db.sampleDrinks(sample) ]
     
-    return { "data": res }, 200
+    return ({ "data": res }, 200)
 
   def post(self) -> tuple[dict, int]:
     """Creates a Drink given the necessary data to make a drink.
@@ -83,17 +83,16 @@ class MultipleDrink(Resource):
     self.parser.add_argument('ingredients', type = list, action= "append")
     args = self.parser.parse_args()
     
-    params = (args['user_email'], args["name"], args["ingredients"])
-    email, name, ings = params
+    email, name, ings = params = (args['user_email'], args["name"], args["ingredients"])
 
     # error handling 
     if None in params:
-      return { "data": { "err": "Missing one of ['user_email', 'name', 'ingredients']" } }, 400
+      return ({ "data": { "err": "Missing one of ['user_email', 'name', 'ingredients']" } }, 400)
     if not len(ings):
-      return { "data": { "err": "Parameter `ingredients` cannot be empty." } }, 400
+      return ({ "data": { "err": "Parameter `ingredients` cannot be empty." } }, 400)
 
     res = self.db.createDrink(email, name, ings)
-    return { "data": res.toJSON() }, 200
+    return ({ "data": res.toJSON() }, 200)
 
   def delete(self) -> tuple[dict, int]:
     """Removes drinks from the database given a list of corresponding _ids.
@@ -115,9 +114,9 @@ class MultipleDrink(Resource):
 
     # error handling 
     if args["_ids"] is None:
-      return { "data": { "err": "Parameter `_ids` required." } }, 400
+      return ({ "data": { "err": "Parameter `_ids` required." } }, 400)
     elif not len(args["_ids"]):
-      return { "data": { "err": "Parameter `_ids` cannot be empty." } }, 400
+      return ({ "data": { "err": "Parameter `_ids` cannot be empty." } }, 400)
 
     res = [ _id for _id in args["_ids"] if self.db.deleteDrink(ObjectId(_id)) ]
-    return { "data": res }, 200
+    return ({ "data": res }, 200)
