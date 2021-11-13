@@ -59,7 +59,7 @@ class MultipleDrink(Resource):
         return ({ "data": { "err": "Parameter `_ids` cannot be empty." } }, 400)
       res = [ self.db.getDrink(ObjectId(_id)).toJSON() for _id in args["_ids"] ]
     else: # sample may or may not exist
-      sample = 10 if args["sample"] is None else args["sample"]
+      sample = 9 if args["sample"] is None else args["sample"]
       res = [ drink.toJSON() for drink in self.db.sampleDrinks(sample) ]
     
     return ({ "data": res }, 200)
@@ -118,5 +118,5 @@ class MultipleDrink(Resource):
     elif not len(args["_ids"]):
       return ({ "data": { "err": "Parameter `_ids` cannot be empty." } }, 400)
 
-    res = [ _id for _id in args["_ids"] if self.db.deleteDrink(ObjectId(_id)) ]
+    res = [ _id if self.db.deleteDrink(ObjectId(_id)) else None for _id in args["_ids"] ]
     return ({ "data": res }, 200)
