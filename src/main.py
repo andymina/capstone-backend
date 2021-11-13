@@ -23,6 +23,7 @@ api.add_resource(SingleReview, "/reviews/<string:_id>", endpoint = "review")
 # MULTIPLE RESOURCES
 api.add_resource(MultipleUser, "/users", endpoint = "users")
 api.add_resource(MultipleDrink, "/drinks", endpoint = "drinks")
+api.add_resource(MultipleReview, "/reviews", endpoint = "reviews")
 
 # MULTIPLE RESOURCES
 api.add_resource(MultipleUser, "/users", endpoint = "users")
