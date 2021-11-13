@@ -211,7 +211,7 @@ class DBdriver:
       # update the drink
       self.updateDrink(drink._id, { "rating": drink.rating })
 
-      return self.toReview(res)
+      return (self.toReview(res), drink.rating)
     else:
       # attempt to update in the db
       res = self.client.reviews.find_one_and_update(
@@ -412,7 +412,7 @@ class DBdriver:
     # attempt to update db
     drink = self.client.drinks.find_one_and_update(
       { '_id': drink_id },
-      { '$addToSet': { 'review_ids': review_id } },
+      { '$addToSet': { 'review_ids': [review_id] } },
       return_document = ReturnDocument.AFTER
     )
 
@@ -466,7 +466,7 @@ class DBdriver:
     # attempt to update db
     res = self.client.users.find_one_and_update(
       { 'email': email },
-      { '$addToSet': { f"{type}_ids": _id } }
+      { '$addToSet': { f"{type}_ids": [_id] } }
     )
     # check if update failed
     if not res:

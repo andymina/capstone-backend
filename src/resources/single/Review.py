@@ -59,7 +59,13 @@ class SingleReview(Resource):
             return ({ "data": { "err": "Parameter 'fields' cannot be empty." }}, 400)
 
         res = self.db.updateReview(ObjectId(_id), args["fields"])
-        return self.review_dne if not res else ({ "data": res.toJSON(), }, 200)
+        if res is None:
+            return self.review_dne
+
+        if "rating" in args["fields"]:
+            return ({ "data": { "review": res[0].toJSON(), "drink_rating": res[1] } }, 201)
+        else:
+            return ({ "data": res.toJSON(), }, 200)
 
     def delete(self, _id: str) -> tuple[dict, int]:
         """Deletes the review with the given _id.
