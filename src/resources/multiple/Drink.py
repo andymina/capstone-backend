@@ -57,7 +57,11 @@ class MultipleDrink(Resource):
     elif args["_ids"] is not None: # _ids but not sample
       if not len(args["_ids"]):
         return ({ "data": { "err": "Parameter `_ids` cannot be empty." } }, 400)
-      res = [ self.db.getDrink(ObjectId(_id)).toJSON() for _id in args["_ids"] ]
+
+      res = []
+      for _id in args["_ids"]:
+        drink = self.db.getDrink(ObjectId(_id))
+        res.append(None if drink is None else drink.toJSON())
     else: # sample may or may not exist
       sample = 9 if args["sample"] is None else args["sample"]
       res = [ drink.toJSON() for drink in self.db.sampleDrinks(sample) ]
