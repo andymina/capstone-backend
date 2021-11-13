@@ -19,7 +19,10 @@ app.logger.info('.env loaded')
 api.add_resource(SingleUser, "/users/<string:email>", endpoint = "user")
 api.add_resource(SingleDrink, "/drinks/<string:_id>", endpoint = "drink")
 api.add_resource(SingleReview, "/reviews/<string:_id>", endpoint = "review")
+
+# MULTIPLE RESOURCES
 api.add_resource(MultipleUser, "/users", endpoint = "users")
+api.add_resource(MultipleDrink, "/drinks", endpoint = "drinks")
 
 # MULTIPLE RESOURCES
 api.add_resource(MultipleUser, "/users", endpoint = "users")
