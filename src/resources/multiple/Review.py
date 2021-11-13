@@ -41,18 +41,18 @@ class MultipleReview(Resource):
     self.parser.add_argument('user_email', type = str)
     self.parser.add_argument('drink_id', type = str)
     self.parser.add_argument('comment', type = str)
-    self.parser.add_argument('rating', type = str)
+    self.parser.add_argument('rating', type = int)
 
     args = self.parser.parse_args()
     email, drink_id, comment, rating = params = (args['user_email'], args["drink_id"], args["comment"], args["rating"])
 
     if None in params:
-      return ({ "data": { "err": "Missing one of ['email', 'drink_id', 'comment', 'rating']" } }, 400)
+      return ({ "data": { "err": "Missing one of ['user_email', 'drink_id', 'comment', 'rating']" } }, 400)
     if not len(comment):
       return ({ "data": { "err": "Parameter `comment` cannot be empty." } }, 400)
 
-    res = self.db.createReview(email, drink_id, comment, rating)
-    return ({ "data": res.toJSON() }, 200)
+    res = self.db.createReview(email, ObjectId(drink_id), comment, rating)
+    return ({ "data": res.toJSON() }, 201)
 
   def delete(self) -> tuple[dict, int]:
     self.parser.add_argument("_ids", type = str, action = "append")

@@ -366,8 +366,7 @@ corresponding reviews.
 - API
   - `<Array[String]> _ids`: list of review ObjectIds to be retrieved.
 
-**Returns**: `Array[Review]`. If no drinks are retrieved, returns an empty
-`Array`.
+**Returns**: `Array[Review]`. If a review isn't retrieved, `null` is returned in its place.
 
 ### POST
 
@@ -382,7 +381,7 @@ database.
   - `<String> comment`: comment of the review left
   - `<String> rating`: 1 - 5 rating of the drink
 
-**Returns**: newly created `Drink`.
+**Returns**: newly created `Review`.
 
 ### DELETE
 
@@ -395,4 +394,4 @@ from the database.
   - `<Array[String]> _ids`: list of review ObjectIds to be deleted
 
 **Returns**: `Array[String]` where each element is the ObjectId
-of a deleted review. If no reviews are deleted, returns an empty `Array`.
+of a deleted review. If a review isn't deleted, `null` is returned in its place.
