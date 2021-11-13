@@ -133,6 +133,18 @@ class DBdriver:
 
     return self.toUser(res) if res else None
 
+  def deleteUser(self, email: str) -> bool:
+    """Deletes a user from the database.
+
+      Arguments:
+        - email { str }: the email of the User to be deleted
+      
+      Returns:
+        - `bool`: True if the user was deleted, False otherwise.
+    """
+    res = self.client.users.find_one_and_delete({ "email": email })
+    return bool(res)
+    
   # endregion
   
   # region Review
