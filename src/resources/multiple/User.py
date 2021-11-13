@@ -83,7 +83,7 @@ class MultipleUser(Resource):
     # create the user
     res = self.db.createUser(args["fname"], args["lname"], args["email"], args["pw"])
 
-    return ({ "data": res.toJSON() }, 200)
+    return ({ "data": res.toJSON() }, 201)
 
   def delete(self) -> tuple[dict, int]:
     """Removes Users from the database given a list of corresponding emails.
