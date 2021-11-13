@@ -50,7 +50,10 @@ class MultipleUser(Resource):
     if args["emails"] is None:
       return ({ "data": { "err": "Parameter `emails` cannot be empty." } }, 400)
 
-    res = [ self.db.getUser(email).toJSON() for email in args["emails"] ]
+    res = []
+    for email in args["emails"]:
+      user = self.db.getUser(email)
+      res.append(user.toJSON() if user else None)
     return ({ "data": res }, 200)
 
   def post(self) -> tuple[dict, int]:
@@ -103,5 +106,5 @@ class MultipleUser(Resource):
     if args["emails"] is None:
       return ({ "data": { "err": "Parameter `emails` cannot be empty." } }, 400)
 
-    res = [ email for email in args["emails"] if self.db.deleteUser(email) ]
+    res = [ email if self.db.deleteUser(email) else None for email in args["emails"] ]
     return ({ "data": res }, 200)
