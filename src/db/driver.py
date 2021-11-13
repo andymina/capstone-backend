@@ -270,11 +270,8 @@ class DBdriver:
 
       Returns:
         - `Drink`: the updated Drink.
-        - `None`: if Fields is an empty dict or Drink DNE.
-    """
-    if len(fields) == 0:
-      return None
-    
+        - `None`: if Drink DNE.
+    """    
     # attempt to update in db
     res = self.client.drinks.find_one_and_update(
       { "_id": _id }, { "$set": fields },
@@ -407,7 +404,7 @@ class DBdriver:
     # attempt to update db
     drink = self.client.drinks.find_one_and_update(
       { '_id': drink_id },
-      { '$pullAll': { "review_ids": review_id } }
+      { '$pullAll': { "review_ids": [review_id] } }
     )
 
     if not drink:
@@ -459,7 +456,7 @@ class DBdriver:
     # attempt to update db
     res = self.client.users.find_one_and_update(
       { 'email': email },
-      { '$pullAll': { f"{type}_ids": _id } }
+      { '$pullAll': { f"{type}_ids": [_id] } }
     )
     # check if update failed
     if not res:

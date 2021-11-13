@@ -14,6 +14,19 @@
 ([Single](#single-drink-drinksstring_id), [Multiple](#multiple-drinks-drinks))
 - [Review API](#review-api)
 ([Single](#single-review-reviewsstring_id), [Multiple](#multiple-reviews-reviews))
+- [Completed APIs](#completed-apis)
+
+## Completed APIs
+
+- User
+  - [ ] Single
+  - [ ] Multiple
+- Drink
+  - [x] Single
+  - [ ] Multiple
+- Review
+  - [ ] Single
+  - [ ] Multiple
 
 ## Summary
 
@@ -40,6 +53,21 @@ OR
     "data": {
         "item": User, Drink, Review, or JSON-compatible data type
     }
+}
+```
+
+## Error Handling
+
+If an API endpoint encounters an unexpected error during execution, it will return an error message
+within the response. If the API endpoint specifies that `null` will be returned, then it will be
+in `res` of the `data` object.
+
+```
+{
+  "data": {
+    "res": as specified by the API endpoint,
+    "err": String
+  }
 }
 ```
 
@@ -202,7 +230,7 @@ to be updated, updates the drink in the database and returns the updated drink.
   - `<Object> fields`: key represents the property name to updated.
     value represents the new value.
 
-**Returns**: updated `Drink`.
+**Returns**: updated `Drink` if found. `null` if the drink DNE.
 
 ### DELETE
 
@@ -213,6 +241,7 @@ this drink from the user who created it.
 
 - Route
   - `<String> _id`: ObjectId of the drink to be deleted.
+  - `<String> specifier`: Specifies where this drink 
 
 **Returns**: the `_id` of the removed Drink. `null` if the corresponding
 drink DNE.
