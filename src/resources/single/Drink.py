@@ -28,12 +28,12 @@ class SingleDrink(Resource):
 
   def __init__(self) -> None:
     self.db = DBdriver()
-    self.drink_dne = {
+    self.drink_dne = ({
       "data": {
         "res": None,
         "err": "Drink with that _id DNE"
       }
-    }, 404
+    }, 404)
     self.parser = reqparse.RequestParser(bundle_errors = True)
 
   def get(self, _id: str) -> tuple[dict, int]:
@@ -48,7 +48,7 @@ class SingleDrink(Resource):
     """
     # search for _id in DBdriver
     res = self.db.getDrink(ObjectId(_id))
-    return self.drink_dne if not res else { "data": res.toJSON() }, 200
+    return self.drink_dne if not res else ({ "data": res.toJSON() }, 200)
 
   def put(self, _id: str) -> tuple[dict, int]:
     """Updates the drink with the given _id.
@@ -68,12 +68,12 @@ class SingleDrink(Resource):
 
     # error handling
     if args["fields"] is None:
-      return { "data": { "err": "Missing fields parameter." } }, 400
+      return ({ "data": { "err": "Missing fields parameter." } }, 400)
     elif not len(args["fields"]):
-      return { "data": { "err": "Parameter 'fields' cannot be empty." } }, 400
+      return ({ "data": { "err": "Parameter 'fields' cannot be empty." } }, 400)
 
     res = self.db.updateDrink(ObjectId(_id), args["fields"])
-    return self.drink_dne if not res else { "data": res.toJSON() }, 200
+    return self.drink_dne if not res else ({ "data": res.toJSON() }, 200)
 
   def delete(self, _id: str) -> tuple[dict, int]:
     """Deletes the drink with the given _id.
@@ -86,4 +86,4 @@ class SingleDrink(Resource):
           of the deleted drink.
     """
     deleted = self.db.deleteDrink(ObjectId(_id))
-    return self.drink_dne if not deleted else { "data": _id }, 200
+    return self.drink_dne if not deleted else ({ "data": _id }, 200)
