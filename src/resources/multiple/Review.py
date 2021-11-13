@@ -25,6 +25,11 @@ class MultipleReview(Resource):
     elif args["_ids"] is not None:
       if not len(args["_ids"]):
         return ({ "data": { "err": "Parameter `_ids` cannot be empty." } }, 400)
+
+      res = []
+      for _id in args["_ids"]:
+        review = self.db.getReview(ObjectId(_id))
+        res.append(None if review is None else review.toJSON())
     else:
       sample = 10 if args["sample"] is None else args["sample"]
       res = [ review.toJSON() for review in self.db.sampleReviews(sample) ]

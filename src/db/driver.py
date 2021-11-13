@@ -238,6 +238,22 @@ class DBdriver:
     # update the user
     self.detachItem('review', res['user_email'], review_id)
     return True
+
+  def sampleReviews(self, size: int) -> list[Review]:
+    """Returns size random reviews from the database
+      Arguments:
+        - size { int }: the number of random reviews to be retrieved
+      Raises:
+        - `ValueError`: Raised if size is not a non-zero positive integer.
+      
+      Returns:
+        - `list[Review]`: A list of random reviews.
+    """
+    if size < 0:
+      raise ValueError("Parameter `size` must be a positive non-zero integer.")
+
+    res = self.client.reviews.aggregate([{ "$sample": { "size": size } }])
+    return [ self.toReview(review) for review in res ]
   
   # endregion
 
