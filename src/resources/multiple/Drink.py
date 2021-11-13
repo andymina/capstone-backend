@@ -96,7 +96,7 @@ class MultipleDrink(Resource):
       return ({ "data": { "err": "Parameter `ingredients` cannot be empty." } }, 400)
 
     res = self.db.createDrink(email, name, ings)
-    return ({ "data": res.toJSON() }, 200)
+    return ({ "data": res.toJSON() }, 201)
 
   def delete(self) -> tuple[dict, int]:
     """Removes drinks from the database given a list of corresponding _ids.
