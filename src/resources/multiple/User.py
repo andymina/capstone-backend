@@ -53,7 +53,7 @@ class MultipleUser(Resource):
     res = []
     for email in args["emails"]:
       user = self.db.getUser(email)
-      res.append(user.toJSON() if user else None)
+      res.append(None if user is None else user.toJSON())
     return ({ "data": res }, 200)
 
   def post(self) -> tuple[dict, int]:
