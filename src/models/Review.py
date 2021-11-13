@@ -25,8 +25,7 @@ class Review:
     res = vars(self)
     # convert _id fields and date
     if self._id is not None:
-      res['_id'] = str(self._id) 
-    res['user_email'] = str(self.user_email)
+      res['_id'] = str(self._id)
     res['drink_id'] = str(self.drink_id)
     res['date'] = str(self.date)
 

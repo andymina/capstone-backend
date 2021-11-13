@@ -185,6 +185,41 @@ class DBdriver:
     self.attachItem('review', user_email, temp._id)
     return temp
 
+  def updateReview(self, _id: ObjectId, fields: dict) -> Review or tuple[Review, int]:
+    if len(fields) == 0:
+      return None
+
+    if "rating" in fields:
+      # grab the old review
+      old = self.getReview(_id)
+
+      # return if DNE
+      if old is None:
+        return None
+
+      # attempt to update in the db
+      res = self.client.reviews.find_one_and_update(
+        { "_id": _id }, { "$set": fields },
+        return_document = ReturnDocument.AFTER
+      )
+
+      # grab the drink 
+      drink = self.getDrink(res["drink_id"])
+      drink.rating -= old.rating
+      drink.update_rating(res["rating"])
+
+      # update the drink
+      self.updateDrink(drink._id, { "rating": drink.rating })
+
+      return (self.toReview(res), drink.rating)
+    else:
+      # attempt to update in the db
+      res = self.client.reviews.find_one_and_update(
+        { "_id": _id }, { "$set": fields },
+        return_document = ReturnDocument.AFTER
+      )
+      return self.toReview(res) if res else None
+
   def deleteReview(self, review_id: ObjectId) -> bool:
     """Deletes a Review by _id in the db.
 
@@ -377,7 +412,7 @@ class DBdriver:
     # attempt to update db
     drink = self.client.drinks.find_one_and_update(
       { '_id': drink_id },
-      { '$addToSet': { 'review_ids': review_id } },
+      { '$addToSet': { 'review_ids': [review_id] } },
       return_document = ReturnDocument.AFTER
     )
 
@@ -431,7 +466,7 @@ class DBdriver:
     # attempt to update db
     res = self.client.users.find_one_and_update(
       { 'email': email },
-      { '$addToSet': { f"{type}_ids": _id } }
+      { '$addToSet': { f"{type}_ids": [_id] } }
     )
     # check if update failed
     if not res:
