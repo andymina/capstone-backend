@@ -1,5 +1,6 @@
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
+from bson import ObjectId
 
 class SingleUser(Resource):
   """API for single user endpoints.
@@ -64,6 +65,12 @@ class SingleUser(Resource):
       return { "data": { "err": "Missing fields parameter." } }, 400
     elif not len(args["fields"]):
       return { "data": { "err": "Parameter 'fields' cannot be empty." } }, 400
+
+    # if we're updating _ids make sure to cast
+    for key, val in args["fields"].items():
+      if "_ids" in key:
+        val = [ObjectId(_id) for _id in val] 
+        args["fields"][key] = val
 
     res = self.db.updateUser(email, args["fields"])
     return self.user_dne if not res else ({ "data": res.toJSON() }, 200)

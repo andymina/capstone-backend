@@ -205,11 +205,11 @@ class DBdriver:
 
       # grab the drink 
       drink = self.getDrink(res["drink_id"])
-      drink.rating -= old.rating
+      drink.sum -= old.rating
       drink.update_rating(res["rating"])
 
       # update the drink
-      self.updateDrink(drink._id, { "rating": drink.rating })
+      self.updateDrink(drink._id, { "rating": drink.rating, "sum": drink.sum })
 
       return (self.toReview(res), drink.rating)
     else:
@@ -238,22 +238,6 @@ class DBdriver:
     # update the user
     self.detachItem('review', res['user_email'], review_id)
     return True
-
-  def sampleReviews(self, size: int) -> list[Review]:
-    """Returns size random reviews from the database
-      Arguments:
-        - size { int }: the number of random reviews to be retrieved
-      Raises:
-        - `ValueError`: Raised if size is not a non-zero positive integer.
-      
-      Returns:
-        - `list[Review]`: A list of random reviews.
-    """
-    if size < 0:
-      raise ValueError("Parameter `size` must be a positive non-zero integer.")
-
-    res = self.client.reviews.aggregate([{ "$sample": { "size": size } }])
-    return [ self.toReview(review) for review in res ]
   
   # endregion
 
@@ -424,7 +408,7 @@ class DBdriver:
     res = Drink(doc['user_email'], doc['name'], doc['ingredients'])
     for k, v in doc.items():
       setattr(res, k, v)
-    res.review_ids = set(res.review_ids)
+    res.review_ids = set(doc["review_ids"])
     return res
 
   def attachReview(
@@ -446,17 +430,17 @@ class DBdriver:
     # attempt to update db
     drink = self.client.drinks.find_one_and_update(
       { '_id': drink_id },
-      { '$addToSet': { 'review_ids': [review_id] } },
+      { '$addToSet': { 'review_ids': review_id } },
       return_document = ReturnDocument.AFTER
     )
 
     if not drink:
-      raise KeyError(f"Drink with {drink_id} DNE")
+      raise KeyError(f"Drink with _id {drink_id} DNE")
     
     # update the local drink
     drink = self.toDrink(drink)
     drink.update_rating(rating)
-    self.updateDrink(drink_id, { 'rating': drink.rating })
+    self.updateDrink(drink_id, { 'rating': drink.rating, "sum": drink.sum })
 
   def detachReview(self, drink_id: ObjectId, review_id: ObjectId, rating: int):
     """Detaches the review with the associated _id from this drink.
@@ -482,7 +466,7 @@ class DBdriver:
     # update the local drink
     drink = self.toDrink(drink)
     drink.update_rating(-rating)
-    self.updateDrink(drink_id, { 'rating': drink.rating })
+    self.updateDrink(drink_id, { 'rating': drink.rating, "sum": drink.sum })
 
   def attachItem(self, type: str, email: str, _id: ObjectId):
     """Attach an item to the User given the user's email and item's _id.
@@ -500,14 +484,11 @@ class DBdriver:
     # attempt to update db
     res = self.client.users.find_one_and_update(
       { 'email': email },
-      { '$addToSet': { f"{type}_ids": [_id] } }
+      { '$addToSet': { f"{type}_ids": _id } }
     )
     # check if update failed
     if not res:
       raise KeyError(f"User with email `{email}` DNE")
-
-    # convert to user
-    self.toUser(res).add_item(type, _id)
 
   def detachItem(self, type: str, email: str, _id: ObjectId):
     """Optimized way to detach _id from user's drinks, favorites, or reviews.

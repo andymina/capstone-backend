@@ -56,7 +56,6 @@ class MultipleReview(Resource):
 
   def delete(self) -> tuple[dict, int]:
     self.parser.add_argument("_ids", type = str, action = "append")
-
     args = self.parser.parse_args()
 
     if args["_ids"] is None:

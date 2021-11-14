@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from flask_restful import Api
+from flask_restful import Api, Resource
 from dotenv import load_dotenv  
 from resources import SingleUser, SingleDrink, SingleReview
 from resources import MultipleUser, MultipleDrink, MultipleReview
@@ -24,6 +24,15 @@ api.add_resource(SingleReview, "/reviews/<string:_id>", endpoint = "review")
 api.add_resource(MultipleUser, "/users", endpoint = "users")
 api.add_resource(MultipleDrink, "/drinks", endpoint = "drinks")
 api.add_resource(MultipleReview, "/reviews", endpoint = "reviews")
+
+class Sandbox(Resource):
+  def post(self):
+    from db.driver import DBdriver
+    d = DBdriver()
+    d.seed()
+    return 204
+
+api.add_resource(Sandbox, "/seed", endpoint = "seed")
 
 if __name__ == "__main__":
   from os import environ
