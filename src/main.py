@@ -25,11 +25,6 @@ api.add_resource(MultipleUser, "/users", endpoint = "users")
 api.add_resource(MultipleDrink, "/drinks", endpoint = "drinks")
 api.add_resource(MultipleReview, "/reviews", endpoint = "reviews")
 
-# MULTIPLE RESOURCES
-api.add_resource(MultipleUser, "/users", endpoint = "users")
-api.add_resource(MultipleDrink, "/drinks", endpoint = "drinks")
-api.add_resource(MultipleReview, "/reviews", endpoint = "reviews")
-
 class Sandbox(Resource):
   def post(self):
     from db.driver import DBdriver
