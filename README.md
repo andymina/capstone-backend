@@ -14,19 +14,6 @@
 ([Single](#single-drink-drinksstring_id), [Multiple](#multiple-drinks-drinks))
 - [Review API](#review-api)
 ([Single](#single-review-reviewsstring_id), [Multiple](#multiple-reviews-reviews))
-- [Completed APIs](#completed-apis)
-
-## Completed APIs
-
-- User
-  - [ ] Single
-  - [ ] Multiple
-- Drink
-  - [x] Single
-  - [ ] Multiple
-- Review
-  - [ ] Single
-  - [ ] Multiple
 
 ## Summary
 
@@ -53,21 +40,6 @@ OR
     "data": {
         "item": User, Drink, Review, or JSON-compatible data type
     }
-}
-```
-
-## Error Handling
-
-If an API endpoint encounters an unexpected error during execution, it will return an error message
-within the response. If the API endpoint specifies that `null` will be returned, then it will be
-in `res` of the `data` object.
-
-```
-{
-  "data": {
-    "res": as specified by the API endpoint,
-    "err": String
-  }
 }
 ```
 
@@ -147,7 +119,7 @@ to be updated, updates the user in the database and returns the updated user.
   - `<Object> fields`: key represents the property name to updated.
     value represents the new value.
 
-**Returns**: updated `User`. `null` is user with the given email DNE.
+**Returns**: updated `User`.
 
 ### DELETE
 
@@ -172,7 +144,7 @@ user DNE.
 - API
   - `<Array[String]> emails`: list of emails of users to be retrieved.
 
-**Returns**: `Array[User]`. If a user isn't retrieved, `null` is returned in its place.
+**Returns**: `Array[User]`. If no users are retrieved, returns an empty `Array`.
 
 ### POST
 
@@ -200,7 +172,7 @@ database.
   - `<Array[String]> emails`: list of users to be deleted by email
 
 **Returns**: `Array[String]` where each element is the email of a deleted user.
-If a user isn't deleted, `null` is returned in its place.
+If no users are deleted, returns an empty `Array`.
 
 # Drink API
 
@@ -230,7 +202,7 @@ to be updated, updates the drink in the database and returns the updated drink.
   - `<Object> fields`: key represents the property name to updated.
     value represents the new value.
 
-**Returns**: updated `Drink` if found. `null` if the drink DNE.
+**Returns**: updated `Drink`.
 
 ### DELETE
 
@@ -241,7 +213,6 @@ this drink from the user who created it.
 
 - Route
   - `<String> _id`: ObjectId of the drink to be deleted.
-  - `<String> specifier`: Specifies where this drink 
 
 **Returns**: the `_id` of the removed Drink. `null` if the corresponding
 drink DNE.
@@ -258,8 +229,8 @@ corresponding drinks.
 - API
   - `<Array[String]> _ids`: list of drink ObjectIds to be retrieved.
 
-**Returns**: `Array[Drink]`. If an `_id` is passed that doesn't correspond to a Drink,
-`null` is returned in it's place.
+**Returns**: `Array[Drink]`. If no drinks are retrieved, returns an empty
+`Array`.
 
 ### POST
 
@@ -287,7 +258,7 @@ from the database.
   - `<Array[String]> _ids`: list of drink ObjectIds to be deleted
 
 **Returns**: `Array[String]` where each element is the ObjectId
-of a deleted drink. If a drink isn't deleted, `null` is returned in place of its `_id`.
+of a deleted drink. If no drinks are deleted, returns an empty `Array`.
 
 # Review API
 
@@ -366,7 +337,8 @@ corresponding reviews.
 - API
   - `<Array[String]> _ids`: list of review ObjectIds to be retrieved.
 
-**Returns**: `Array[Review]`. If a review isn't retrieved, `null` is returned in its place.
+**Returns**: `Array[Review]`. If no drinks are retrieved, returns an empty
+`Array`.
 
 ### POST
 
@@ -381,7 +353,7 @@ database.
   - `<String> comment`: comment of the review left
   - `<String> rating`: 1 - 5 rating of the drink
 
-**Returns**: newly created `Review`.
+**Returns**: newly created `Drink`.
 
 ### DELETE
 
@@ -394,4 +366,4 @@ from the database.
   - `<Array[String]> _ids`: list of review ObjectIds to be deleted
 
 **Returns**: `Array[String]` where each element is the ObjectId
-of a deleted review. If a review isn't deleted, `null` is returned in its place.
+of a deleted review. If no reviews are deleted, returns an empty `Array`.
