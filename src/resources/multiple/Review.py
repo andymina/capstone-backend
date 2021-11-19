@@ -23,6 +23,7 @@ class MultipleReview(Resource):
     if args["_ids"] is not None and args["sample"] is not None:
       return ({"data": { "err": "Cannot pass both _ids and sample parameters; choose one." } }, 400)
     elif args["_ids"] is not None:
+      print("HAVE _IDSSSS")
       if not len(args["_ids"]):
         return ({ "data": { "err": "Parameter `_ids` cannot be empty." } }, 400)
 
