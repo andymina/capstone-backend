@@ -57,7 +57,7 @@ class DBdriver:
     """
     # check if this user exists and return it
     existing_user = self.getUser(email)
-    if existing_user is not None:
+    if existing_user:
       return existing_user
 
     # create a new user
@@ -133,6 +133,18 @@ class DBdriver:
 
     return self.toUser(res) if res else None
 
+  def deleteUser(self, email: str) -> bool:
+    """Deletes a user from the database.
+
+      Arguments:
+        - email { str }: the email of the User to be deleted
+      
+      Returns:
+        - `bool`: True if the user was deleted, False otherwise.
+    """
+    res = self.client.users.find_one_and_delete({ "email": email })
+    return bool(res)
+    
   # endregion
   
   # region Review
@@ -172,6 +184,41 @@ class DBdriver:
     self.attachReview(drink_id, temp._id, rating)
     self.attachItem('review', user_email, temp._id)
     return temp
+
+  def updateReview(self, _id: ObjectId, fields: dict) -> Review or tuple[Review, int]:
+    if len(fields) == 0:
+      return None
+
+    if "rating" in fields:
+      # grab the old review
+      old = self.getReview(_id)
+
+      # return if DNE
+      if old is None:
+        return None
+
+      # attempt to update in the db
+      res = self.client.reviews.find_one_and_update(
+        { "_id": _id }, { "$set": fields },
+        return_document = ReturnDocument.AFTER
+      )
+
+      # grab the drink 
+      drink = self.getDrink(res["drink_id"])
+      drink.sum -= old.rating
+      drink.update_rating(res["rating"])
+
+      # update the drink
+      self.updateDrink(drink._id, { "rating": drink.rating, "sum": drink.sum })
+
+      return (self.toReview(res), drink.rating)
+    else:
+      # attempt to update in the db
+      res = self.client.reviews.find_one_and_update(
+        { "_id": _id }, { "$set": fields },
+        return_document = ReturnDocument.AFTER
+      )
+      return self.toReview(res) if res else None
 
   def deleteReview(self, review_id: ObjectId) -> bool:
     """Deletes a Review by _id in the db.
@@ -217,7 +264,7 @@ class DBdriver:
     """
     existing_drink = self.client.drinks.find_one({ 'user_email': user_email, 'name': name })
     if existing_drink:
-      return existing_drink
+      return self.toDrink(existing_drink)
 
     # create new Drink
     temp = Drink(user_email, name, ingredients)
@@ -258,11 +305,8 @@ class DBdriver:
 
       Returns:
         - `Drink`: the updated Drink.
-        - `None`: if Fields is an empty dict or Drink DNE.
-    """
-    if len(fields) == 0:
-      return None
-    
+        - `None`: if Drink DNE.
+    """    
     # attempt to update in db
     res = self.client.drinks.find_one_and_update(
       { "_id": _id }, { "$set": fields },
@@ -291,6 +335,24 @@ class DBdriver:
     # remove reviews attached to this drink
     self.client.reviews.delete_many({ "_id": { "$in": res["review_ids"] } })
     return True
+
+  def sampleDrinks(self, size: int) -> list[Drink]:
+    """Returns size random drinks from the database
+
+      Arguments:
+        - size { int }: the number of random drinks to be retrieved
+
+      Raises:
+        - `ValueError`: Raised if size is not a non-zero positive integer.
+      
+      Returns:
+        - `list[Drink]`: A list of random drinks.
+    """
+    if size < 0:
+      raise ValueError("Parameter `size` must be a positive non-zero integer.")
+
+    res = self.client.drinks.aggregate([{ "$sample": { "size": size } }])
+    return [ self.toDrink(drink) for drink in res ]
 
   # endregion
 
@@ -346,7 +408,7 @@ class DBdriver:
     res = Drink(doc['user_email'], doc['name'], doc['ingredients'])
     for k, v in doc.items():
       setattr(res, k, v)
-    res.review_ids = set(res.review_ids)
+    res.review_ids = set(doc["review_ids"])
     return res
 
   def attachReview(
@@ -373,12 +435,12 @@ class DBdriver:
     )
 
     if not drink:
-      raise KeyError(f"Drink with {drink_id} DNE")
+      raise KeyError(f"Drink with _id {drink_id} DNE")
     
     # update the local drink
     drink = self.toDrink(drink)
     drink.update_rating(rating)
-    self.updateDrink(drink_id, { 'rating': drink.rating })
+    self.updateDrink(drink_id, { 'rating': drink.rating, "sum": drink.sum })
 
   def detachReview(self, drink_id: ObjectId, review_id: ObjectId, rating: int):
     """Detaches the review with the associated _id from this drink.
@@ -395,7 +457,7 @@ class DBdriver:
     # attempt to update db
     drink = self.client.drinks.find_one_and_update(
       { '_id': drink_id },
-      { '$pullAll': { "review_ids": review_id } }
+      { '$pullAll': { "review_ids": [review_id] } }
     )
 
     if not drink:
@@ -404,7 +466,7 @@ class DBdriver:
     # update the local drink
     drink = self.toDrink(drink)
     drink.update_rating(-rating)
-    self.updateDrink(drink_id, { 'rating': drink.rating })
+    self.updateDrink(drink_id, { 'rating': drink.rating, "sum": drink.sum })
 
   def attachItem(self, type: str, email: str, _id: ObjectId):
     """Attach an item to the User given the user's email and item's _id.
@@ -428,9 +490,6 @@ class DBdriver:
     if not res:
       raise KeyError(f"User with email `{email}` DNE")
 
-    # convert to user
-    self.toUser(res).add_item(type, _id)
-
   def detachItem(self, type: str, email: str, _id: ObjectId):
     """Optimized way to detach _id from user's drinks, favorites, or reviews.
 
@@ -447,7 +506,7 @@ class DBdriver:
     # attempt to update db
     res = self.client.users.find_one_and_update(
       { 'email': email },
-      { '$pullAll': { f"{type}_ids": _id } }
+      { '$pullAll': { f"{type}_ids": [_id] } }
     )
     # check if update failed
     if not res:
