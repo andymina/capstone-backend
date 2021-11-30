@@ -4,6 +4,7 @@ from flask_restful import Api, Resource
 from dotenv import load_dotenv  
 from resources import SingleUser, SingleDrink, SingleReview
 from resources import MultipleUser, MultipleDrink, MultipleReview
+from auth.auth_helper import authenticate, identity
 
 app = Flask(__name__) # init flask
 CORS(app) # CORS friendly

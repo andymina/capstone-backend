@@ -1,5 +1,8 @@
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
+from os import environ
+import bcrypt
+import jwt
 
 class MultipleUser(Resource):
   """API for multiple User endpoints.
@@ -57,6 +60,7 @@ class MultipleUser(Resource):
     return ({ "data": res }, 200)
 
   def post(self) -> tuple[dict, int]:
+    # sign up
     """Creates a Drink given the necessary data to make a drink.
       Arguments:
         - `fname` { str } [API]: first name
@@ -76,17 +80,21 @@ class MultipleUser(Resource):
     args = self.parser.parse_args()
 
     # error handling
-    params = ["fname", "lname", "email", "pw"]
-    for p in params:
-      if args[p] is None:
-        return ({ "data": { "err": f"Parameter `{p}` is required." } }, 400)
-      elif args[p] == "":
-        return ({ "data": { "err": f"Parameter `{p}` cannot be empty." } }, 400)
+    errors = validate_signup(args)
+    if len(errors) != 0:
+      return ({ "data": errors }, 400)
 
-    # create the user
-    res = self.db.createUser(args["fname"], args["lname"], args["email"], args["pw"])
+    # return the user if they exist
+    if self.db.getUser(args["email"]) is not None:
+      return ({ "data": { "err": "User with that email already exists." } }, 400)
 
-    return ({ "data": res.toJSON() }, 201)
+    # hash pw and create user
+    hashed = bcrypt.hashpw(args["pw"], bcrypt.gensalt())
+    res = self.db.createUser(args["fname"], args["lname"], args["email"], hashed)
+
+    # create jwt
+    token = jwt.encode(res, environ["JWT_SECRET"], algorithm = "HS256")
+    return ({ "data": token }, 201)
 
   def delete(self) -> tuple[dict, int]:
     """Removes Users from the database given a list of corresponding emails.
@@ -108,3 +116,6 @@ class MultipleUser(Resource):
 
     res = [ email if self.db.deleteUser(email) else None for email in args["emails"] ]
     return ({ "data": res }, 200)
+  
+  def validate_signup(form):
+    pass
