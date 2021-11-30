@@ -1,20 +1,25 @@
 from flask import Flask
+from flask_jwt import JWT
 from flask_cors import CORS
 from flask_restful import Api, Resource
 from dotenv import load_dotenv  
+from os import environ
 from resources import SingleUser, SingleDrink, SingleReview
 from resources import MultipleUser, MultipleDrink, MultipleReview
-from auth.auth_helper import authenticate, identity
+import auth
 
 app = Flask(__name__) # init flask
-CORS(app) # CORS friendly
-api = Api(app) # prepare to accept resources
 
 # load env vars
 if not load_dotenv():
   app.logger.error('FATAL: Failed to load .env')
   exit()
 app.logger.info('.env loaded')
+
+app.secret_key = environ["JWT_SECRET"]
+JWT(app, auth.authenticate, auth.identify)
+CORS(app) # CORS friendly
+api = Api(app) # prepare to accept resources
 
 # SINGLE RESOURCES
 api.add_resource(SingleUser, "/users/<string:email>", endpoint = "user")
@@ -36,7 +41,6 @@ class Sandbox(Resource):
 api.add_resource(Sandbox, "/seed", endpoint = "seed")
 
 if __name__ == "__main__":
-  from os import environ
   app.run(
     debug = True,
     threaded = True,

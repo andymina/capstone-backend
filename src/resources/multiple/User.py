@@ -2,6 +2,7 @@ from db.driver import DBdriver
 from flask_restful import Resource, reqparse
 from os import environ
 import bcrypt
+import auth
 import jwt
 
 class MultipleUser(Resource):
@@ -80,7 +81,7 @@ class MultipleUser(Resource):
     args = self.parser.parse_args()
 
     # error handling
-    errors = validate_signup(args)
+    errors = auth.validate_sign_up(args)
     if len(errors) != 0:
       return ({ "data": errors }, 400)
 
