@@ -1,6 +1,6 @@
 import json
 from flask import Flask, request, jsonify
-from flask.ext.login import (current_user, LoginManager, login_user, logout_user, login_required)
+from flask_login import (current_user, LoginManager, login_user, logout_user, login_required)
 from flask_mongoengine import MongoEngine
 from resources.single import User
 app = Flask(__name__)
@@ -93,7 +93,7 @@ def update_record():
 @app.route('/', methods=['DELETE'])
 @login_required
 
-def delte_reord():
+def delte_record():
     record = json.loads(request.data)
     user = User.objects(name=record['name'].first())
     if not user:
