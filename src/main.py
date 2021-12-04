@@ -1,43 +1,50 @@
 from flask import Flask
-from flask_jwt import JWT, jwt_required, current_identity
-from werkzeug.security import safe_str_cmp
+from flask_jwt import JWT
+from flask_cors import CORS
+from flask_restful import Api, Resource
+from dotenv import load_dotenv  
+from os import environ
+from resources import SingleUser, SingleDrink, SingleReview
+from resources import MultipleUser, MultipleDrink, MultipleReview
+from auth import AuthHandler
 
-class User(object):
-    def __init__(self, id, username, password):
-        self.id = id
-        self.username = username
-        self.password = password
+app = Flask(__name__) # init flask
 
-    def __str__(self):
-        return "User(id='%s')" % self.id
+# load env vars
+if not load_dotenv():
+  app.logger.error('FATAL: Failed to load .env')
+  exit()
+app.logger.info('.env loaded')
 
-users = [
-    User(1, 'user1', 'abcxyz'),
-    User(2, 'user2', 'abcxyz'),
-]
+app.config["SECRET_KEY"] = environ["JWT_SECRET"]
+app.config["JWT_REQUIRED_CLAIMS"] = app.config["JWT_VERIFY_CLAIMS"] = ["exp", "iat"]
+JWT(app, AuthHandler.authenticate, AuthHandler.identify)
+CORS(app) # CORS friendly
+api = Api(app) # prepare to accept resources
 
-username_table = {u.username: u for u in users}
-userid_table = {u.id: u for u in users}
+# SINGLE RESOURCES
+api.add_resource(SingleUser, "/users/<string:email>", endpoint = "user")
+api.add_resource(SingleDrink, "/drinks/<string:_id>", endpoint = "drink")
+api.add_resource(SingleReview, "/reviews/<string:_id>", endpoint = "review")
 
-def authenticate(username, password):
-    user = username_table.get(username, None)
-    if user and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
-        return user
+# MULTIPLE RESOURCES
+api.add_resource(MultipleUser, "/users", endpoint = "users")
+api.add_resource(MultipleDrink, "/drinks", endpoint = "drinks")
+api.add_resource(MultipleReview, "/reviews", endpoint = "reviews")
 
-def identity(payload):
-    user_id = payload['identity']
-    return userid_table.get(user_id, None)
+class Sandbox(Resource):
+  def post(self):
+    from db.driver import DBdriver
+    d = DBdriver()
+    d.seed()
+    return 204
 
-app = Flask(__name__)
-app.debug = True
-app.secret_key = 'super-secret'
+api.add_resource(Sandbox, "/seed", endpoint = "seed")
 
-jwt = JWT(app, authenticate, identity)
-
-@app.route('/protected')
-@jwt_required()
-def protected():
-    return '%s' % current_identity
-
-if __name__ == '__main__':
-    app.run()
+if __name__ == "__main__":
+  app.run(
+    debug = True,
+    threaded = True,
+    host = '0.0.0.0',
+    port = environ.get('PORT', 5000)
+  )

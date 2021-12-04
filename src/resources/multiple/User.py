@@ -1,5 +1,7 @@
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
+from flask_jwt import jwt_required
+from datetime import datetime as dt, timedelta as delta
 from os import environ
 import bcrypt
 import auth
@@ -35,6 +37,7 @@ class MultipleUser(Resource):
     }, 404)
     self.parser = reqparse.RequestParser()
 
+  @jwt_required()
   def get(self) -> tuple[dict, int]:
     """Gets a list of Users given a list of emails.
 
@@ -86,16 +89,23 @@ class MultipleUser(Resource):
       return ({ "data": errors }, 400)
 
     # return the user if they exist
-    if self.db.getUser(args["email"]) is not None:
-      return ({ "data": { "err": "User with that email already exists." } }, 400)
+    existing_user = self.db.getUser(args["email"])
+    if existing_user is not None:
+      return ({ "data": existing_user.toJSON() }, 200)
 
     # hash pw and create user
-    hashed = bcrypt.hashpw(args["pw"], bcrypt.gensalt())
+    hashed = bcrypt.hashpw(args["pw"].encode("utf-8"), bcrypt.gensalt())
+    hashed = hashed.decode("utf-8")
     res = self.db.createUser(args["fname"], args["lname"], args["email"], hashed)
+    jwt_res = res.toJSON()
+    jwt_res["iat"] = dt.now()
+    jwt_res["exp"] = jwt_res["iat"] + delta(hours=12)
+    
 
     # create jwt
-    token = jwt.encode(res, environ["JWT_SECRET"], algorithm = "HS256")
-    return ({ "data": token }, 201)
+    token = jwt.encode(jwt_res, environ["JWT_SECRET"], algorithm = "HS256")
+    token = token.decode("utf-8")
+    return ({ "data": { "token": token, "user": res.toJSON() } }, 201)
 
   def delete(self) -> tuple[dict, int]:
     """Removes Users from the database given a list of corresponding emails.

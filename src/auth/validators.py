@@ -2,7 +2,7 @@ import re
 
 # 1 number, 1 lower, 1 upper, 1 special char
 pw_regex = r"(?=.*\d+)(?=.*[a-z]+)(?=.*[A-Z]+)(?=.*[!#()-*_&]+)"
-email_regex = r"[\w\d-_+\.]+@[[\w\d-_+\.]+\.[\w\d-_]+"
+email_regex = r"[\w\d+\.]+@[[\w\d+\.]+\.[\w\d]+"
 fname_regex = r"[\w-]+"
 lname_regex = r"[\w-]+[ \w\d]+\.{0,1}"
 
@@ -40,7 +40,7 @@ def validate_sign_up(form) -> dict[str, str]:
   if not re.match(pw_regex, form["pw"]):
     errors["pw"] = "Password must contain at least one uppercase letter, one lowercase\
     letter, one number, and one special character"
-  if not 6 < len(form["pw"]) < 18:
-    errors["pw"] = "Password must be betwee 6 and 18 characters"
+  if not 6 <= len(form["pw"]) <= 18:
+    errors["pw"] = "Password must be between 6 and 18 characters"
 
   return errors

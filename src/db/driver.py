@@ -25,15 +25,13 @@ class DBdriver:
     
     # connect to the capstone database
     self.client: Database = mongo.capstone
+    self.mongo = mongo
     self.serializers = {
       'drink': self.toDrink,
       'review': self.toReview,
       'user': self.toUser
     }
-
-  def __del__(self):
-    self.mongo.close()
-
+    
   # region User
 
   def getUser(self, email: str) -> User or None:
