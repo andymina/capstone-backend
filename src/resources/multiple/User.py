@@ -101,6 +101,7 @@ class MultipleUser(Resource):
     token = create_access_token(res.toJSON(), expires_delta=delta(hours=12))
     return ({ "data": { "token": token, "user": res.toJSON() } }, 201)
 
+  @jwt_required()
   def delete(self) -> tuple[dict, int]:
     """Removes Users from the database given a list of corresponding emails.
       Arguments:
