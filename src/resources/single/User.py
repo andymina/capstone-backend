@@ -1,6 +1,10 @@
+from flask_jwt_extended.utils import create_access_token
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
+from datetime import timedelta as delta
 from bson import ObjectId
+import bcrypt
+from ..validator import validate
 
 class SingleUser(Resource):
   """API for single user endpoints.
@@ -45,6 +49,40 @@ class SingleUser(Resource):
     res = self.db.getUser(email)
     return self.user_dne if res is None else ({ "data": res.toJSON() }, 200)
 
+  def post(self, email: str) -> tuple[dict, int]:
+    """Logs the user in. API route = "/users/login"
+
+      Arguments:
+        - email { str }: Necessary for Flask, but not actually needed.
+      
+      Returns:
+        - `tuple[dict, int]`: If the user with the given email DNE, returns None. If the form is
+        incorrect, returns the errors. Otherwise, returns a dict containing the token and the user.
+    """
+    # grab args
+    self.parser.add_argument("email", type = str)
+    self.parser.add_argument("pw", type = str)
+    args = self.parser.parse_args()
+
+    # error handling
+    errors = validate(args, mode="login")
+    if len(errors) != 0:
+      return ({ "data": errors }, 400)
+
+    # grab the existing user
+    user = self.db.getUser(args["email"])
+    if user is None:
+      return self.user_dne
+    
+    # check pw and create token
+    pw_match = bcrypt.checkpw(args["pw"].encode("utf-8"), user.pw.encode("utf-8"))
+
+    if not pw_match:
+      return ({ "data": { "pw": "Password incorrect" } }, 401)
+
+    token = create_access_token(user.toJSON(), expires_delta=delta(hours=12))
+    return ({ "data": { "token": token, "user": user.toJSON() } }, 200)
+    
   def put(self, email: str) -> tuple[dict, int]:
     """Updates the user with the given email.
       Arguments:

@@ -3,7 +3,7 @@ from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, create_access_token
 from datetime import timedelta as delta
 from os import environ
-from ..validators import validate_sign_up
+from ..validator import validate
 import bcrypt
 
 class MultipleUser(Resource):
@@ -36,7 +36,6 @@ class MultipleUser(Resource):
     }, 404)
     self.parser = reqparse.RequestParser()
 
-  @jwt_required()
   def get(self) -> tuple[dict, int]:
     """Gets a list of Users given a list of emails.
 
@@ -63,8 +62,7 @@ class MultipleUser(Resource):
     return ({ "data": res }, 200)
 
   def post(self) -> tuple[dict, int]:
-    # sign up
-    """Creates a User given the necessary data to make a drink.
+    """Creates a User given the necessary data to make a drink. Analogous to signing up.
       Arguments:
         - `fname` { str } [API]: first name
         - `lname` { str } [API]: last name
@@ -72,8 +70,8 @@ class MultipleUser(Resource):
         - `pw` { str } [API]: password
       
       Returns:
-        - `tuple[dict, int]`: Returns the newly created User. If the User exists already,
-          returns the existing User.
+        - `tuple[dict, int]`: If the form is incorrect, returns the errors. Otherwise, returns a
+        dict containing the token and the user.
     """
     # grab args
     self.parser.add_argument("fname", type = str)
@@ -83,14 +81,9 @@ class MultipleUser(Resource):
     args = self.parser.parse_args()
 
     # error handling
-    errors = validate_sign_up(args)
+    errors = validate(args, mode="signup")
     if len(errors) != 0:
       return ({ "data": errors }, 400)
-
-    # return the user if they exist
-    existing_user = self.db.getUser(args["email"])
-    if existing_user is not None:
-      return ({ "data": existing_user.toJSON() }, 200)
 
     # hash pw and create user
     hashed = bcrypt.hashpw(args["pw"].encode("utf-8"), bcrypt.gensalt())
@@ -101,7 +94,6 @@ class MultipleUser(Resource):
     token = create_access_token(res.toJSON(), expires_delta=delta(hours=12))
     return ({ "data": { "token": token, "user": res.toJSON() } }, 201)
 
-  @jwt_required()
   def delete(self) -> tuple[dict, int]:
     """Removes Users from the database given a list of corresponding emails.
       Arguments:

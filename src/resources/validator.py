@@ -6,7 +6,17 @@ email_regex = r"[\w\d+\.]+@[[\w\d+\.]+\.[\w\d]+"
 fname_regex = r"[\w-]+"
 lname_regex = r"[\w-]+[ \w\d]+\.{0,1}"
 
-def validate_sign_up(form) -> dict[str, str]:
+def validate(form: dict, mode="login") -> dict[str, str]:
+  """Form validator.
+
+    Arguments:
+      - form { dict }: k,v pairs of field names and values to checked
+      - mode { str, optional }: The type of form to validate. Must be one of ["signup", "login"].
+        Defaults to "login"
+    
+    Returns:
+      - `dict[str, str]`: Returns k,v pairs of incorrect fields and the associated errmsgs.
+  """
   errors = {}
 
   # check all fields exists and not empty
@@ -16,8 +26,11 @@ def validate_sign_up(form) -> dict[str, str]:
     "email": "Email",
     "pw": "Password"
   }
+  fields = ["email", "pw"]
+  if mode == "signup":
+    fields += ["fname", "lname"]
 
-  for field in ["fname", "lname", "email", "pw"]:
+  for field in fields:
     if field not in form:
       errors[field] = f"{pretty_err[field]} is required"
     elif len(form[field]) == 0:
@@ -26,11 +39,12 @@ def validate_sign_up(form) -> dict[str, str]:
   if len(errors) > 0:
     return errors
 
-  # check fname, lname against regex
-  if not re.match(fname_regex, form["fname"]):
-    errors["fname"] = "First name can only contain letters and dashes"
-  if not re.match(lname_regex, form["lname"]):
-    errors["lname"] = "Last name can only contain letters, dashes, numbers, and periods"
+  if mode == "signup":
+    # check fname, lname against regex
+    if not re.match(fname_regex, form["fname"]):
+      errors["fname"] = "First name can only contain letters and dashes"
+    if not re.match(lname_regex, form["lname"]):
+      errors["lname"] = "Last name can only contain letters, dashes, numbers, and periods"
 
   # check email against regex
   if not re.match(email_regex, form["email"]):
