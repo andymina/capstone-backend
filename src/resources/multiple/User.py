@@ -1,11 +1,10 @@
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
-from flask_jwt import jwt_required
-from datetime import datetime as dt, timedelta as delta
+from flask_jwt_extended import jwt_required, create_access_token
+from datetime import timedelta as delta
 from os import environ
+from ..validators import validate_sign_up
 import bcrypt
-import auth
-import jwt
 
 class MultipleUser(Resource):
   """API for multiple User endpoints.
@@ -65,7 +64,7 @@ class MultipleUser(Resource):
 
   def post(self) -> tuple[dict, int]:
     # sign up
-    """Creates a Drink given the necessary data to make a drink.
+    """Creates a User given the necessary data to make a drink.
       Arguments:
         - `fname` { str } [API]: first name
         - `lname` { str } [API]: last name
@@ -84,7 +83,7 @@ class MultipleUser(Resource):
     args = self.parser.parse_args()
 
     # error handling
-    errors = auth.validate_sign_up(args)
+    errors = validate_sign_up(args)
     if len(errors) != 0:
       return ({ "data": errors }, 400)
 
@@ -97,14 +96,9 @@ class MultipleUser(Resource):
     hashed = bcrypt.hashpw(args["pw"].encode("utf-8"), bcrypt.gensalt())
     hashed = hashed.decode("utf-8")
     res = self.db.createUser(args["fname"], args["lname"], args["email"], hashed)
-    jwt_res = res.toJSON()
-    jwt_res["iat"] = dt.now()
-    jwt_res["exp"] = jwt_res["iat"] + delta(hours=12)
-    
 
-    # create jwt
-    token = jwt.encode(jwt_res, environ["JWT_SECRET"], algorithm = "HS256")
-    token = token.decode("utf-8")
+    # create token
+    token = create_access_token(res.toJSON(), expires_delta=delta(hours=12))
     return ({ "data": { "token": token, "user": res.toJSON() } }, 201)
 
   def delete(self) -> tuple[dict, int]:
@@ -127,6 +121,3 @@ class MultipleUser(Resource):
 
     res = [ email if self.db.deleteUser(email) else None for email in args["emails"] ]
     return ({ "data": res }, 200)
-  
-  def validate_signup(form):
-    pass

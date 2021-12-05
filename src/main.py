@@ -1,12 +1,11 @@
 from flask import Flask
-from flask_jwt import JWT
-from flask_cors import CORS
 from flask_restful import Api, Resource
+from flask_jwt_extended import JWTManager as JWT
+from flask_cors import CORS
 from dotenv import load_dotenv  
 from os import environ
 from resources import SingleUser, SingleDrink, SingleReview
 from resources import MultipleUser, MultipleDrink, MultipleReview
-from auth import AuthHandler
 
 app = Flask(__name__) # init flask
 
@@ -16,9 +15,8 @@ if not load_dotenv():
   exit()
 app.logger.info('.env loaded')
 
-app.config["SECRET_KEY"] = environ["JWT_SECRET"]
-app.config["JWT_REQUIRED_CLAIMS"] = app.config["JWT_VERIFY_CLAIMS"] = ["exp", "iat"]
-JWT(app, AuthHandler.authenticate, AuthHandler.identify)
+app.config["JWT_SECRET_KEY"] = environ["JWT_SECRET"]
+JWT(app) # JWT friendly
 CORS(app) # CORS friendly
 api = Api(app) # prepare to accept resources
 
