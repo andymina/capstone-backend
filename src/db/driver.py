@@ -76,11 +76,11 @@ class DBdriver:
     """Returns all items of 'type' created by this user.
 
       Arguments:
-        - type { str }: Must be one of ['drink', 'review', 'favorite']
+        - type { str }: Must be one of ['drink', 'review', 'favorite', 'img']
         - email { str }
 
       Raises:
-        - `ValueError`: if type is not one of ['drink', 'favorite', 'review']
+        - `ValueError`: if type is not one of ['drink', 'favorite', 'review', 'img']
       
       Returns:
         - `list`: list of type objects for the given user. If type is 'favorite'
