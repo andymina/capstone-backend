@@ -1,6 +1,7 @@
 from db.driver import DBdriver
 from bson import ObjectId
 from flask_restful import Resource, reqparse
+from flask_jwt_extended import jwt_required
 
 class SingleDrink(Resource):
   """API for single drink endpoints.
@@ -50,6 +51,7 @@ class SingleDrink(Resource):
     res = self.db.getDrink(ObjectId(_id))
     return self.drink_dne if not res else ({ "data": res.toJSON() }, 200)
 
+  @jwt_required()
   def put(self, _id: str) -> tuple[dict, int]:
     """Updates the drink with the given _id.
 
@@ -75,6 +77,7 @@ class SingleDrink(Resource):
     res = self.db.updateDrink(ObjectId(_id), args["fields"])
     return self.drink_dne if not res else ({ "data": res.toJSON() }, 200)
 
+  @jwt_required()
   def delete(self, _id: str) -> tuple[dict, int]:
     """Deletes the drink with the given _id.
 

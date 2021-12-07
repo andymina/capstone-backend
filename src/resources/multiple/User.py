@@ -62,7 +62,7 @@ class MultipleUser(Resource):
     return ({ "data": res }, 200)
 
   def post(self) -> tuple[dict, int]:
-    """Creates a User given the necessary data to make a drink. Analogous to signing up.
+    """Creates a User given the necessary data. Analogous to signing up.
       Arguments:
         - `fname` { str } [API]: first name
         - `lname` { str } [API]: last name
@@ -94,6 +94,7 @@ class MultipleUser(Resource):
     token = create_access_token(res.toJSON(), expires_delta=delta(hours=12))
     return ({ "data": { "token": token, "user": res.toJSON() } }, 201)
 
+  @jwt_required()
   def delete(self) -> tuple[dict, int]:
     """Removes Users from the database given a list of corresponding emails.
       Arguments:

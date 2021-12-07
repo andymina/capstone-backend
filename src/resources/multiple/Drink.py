@@ -1,6 +1,7 @@
 from bson import ObjectId
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
+from flask_jwt_extended import jwt_required
 
 class MultipleDrink(Resource):
   """API for multiple drink endpoints.
@@ -68,6 +69,7 @@ class MultipleDrink(Resource):
     
     return ({ "data": res }, 200)
 
+  @jwt_required()
   def post(self) -> tuple[dict, int]:
     """Creates a Drink given the necessary data to make a drink.
 
@@ -98,6 +100,7 @@ class MultipleDrink(Resource):
     res = self.db.createDrink(email, name, ings)
     return ({ "data": res.toJSON() }, 201)
 
+  @jwt_required()
   def delete(self) -> tuple[dict, int]:
     """Removes drinks from the database given a list of corresponding _ids.
 

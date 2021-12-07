@@ -1,4 +1,4 @@
-from flask_jwt_extended.utils import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
 from datetime import timedelta as delta
@@ -82,7 +82,8 @@ class SingleUser(Resource):
 
     token = create_access_token(user.toJSON(), expires_delta=delta(hours=12))
     return ({ "data": { "token": token, "user": user.toJSON() } }, 200)
-    
+  
+  @jwt_required()
   def put(self, email: str) -> tuple[dict, int]:
     """Updates the user with the given email.
       Arguments:
@@ -113,6 +114,7 @@ class SingleUser(Resource):
     res = self.db.updateUser(email, args["fields"])
     return self.user_dne if not res else ({ "data": res.toJSON() }, 200)
 
+  @jwt_required()
   def delete(self, email: str) -> tuple[dict, int]:
     """Deletes the user with the given email.
       Arguments:
