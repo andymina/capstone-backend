@@ -3,7 +3,7 @@ from pprint import pformat
 
 class Drink:
 
-  def __init__(self, user_email: str, name: str, ingredients: list) -> None:
+  def __init__(self, user_email: str, name: str, ingredients: list, img: str) -> None:
     """Create a Drink according to our system diagram.
 
       Arguments:
@@ -18,6 +18,7 @@ class Drink:
     self.ingredients = ingredients
     self.rating = -1 # set to -1 for no reviews with ratings, increments of .5
     self.sum = 0.0 # rolling sum for online avg calcs
+    self.img = img
 
   def __repr__(self) -> str:
     """Provides a string representation for this class.
