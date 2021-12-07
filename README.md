@@ -138,7 +138,7 @@ following headers must be included:
 ```javascript
 {
   "Content-Type": "application/json",
-  "Authorization": `JWT ${token}` // where token is the token returned from log in or sign up
+  "Authorization": `Bearer ${token}` // where token is the token returned from log in or sign up
 }
 ```
 
