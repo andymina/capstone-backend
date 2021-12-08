@@ -99,7 +99,7 @@ class MultipleDrink(Resource):
     if not len(args["ingredients"]):
       return ({ "data": { "err": "Parameter `ingredients` cannot be empty." } }, 400)
 
-    res = self.db.createDrink(args["email"], args["name"], args["ingredients"], args["img"], args["des"])
+    res = self.db.createDrink(args["user_email"], args["name"], args["ingredients"], args["img"], args["des"])
     return ({ "data": res.toJSON() }, 201)
 
   @jwt_required()
