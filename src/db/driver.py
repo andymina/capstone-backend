@@ -13,24 +13,25 @@ class DBdriver:
       Raises:
         - `ConnectionError`: Raised if the driver failed to connect to MongoDB
     """
-    client = MongoClient(environ['MONGODB_URI'])
+    mongo = MongoClient(environ['MONGODB_URI'])
     logger = getLogger(__main__.__name__)
 
     try:
       # ping is cheap and doesn't require auth
-      client.admin.command('ping')
+      mongo.admin.command('ping')
       logger.info('Connected to MongoDB')
     except:
       raise ConnectionError('Failed to connect to MongoDB')
     
     # connect to the capstone database
-    self.client: Database = client.capstone
+    self.client: Database = mongo.capstone
+    self.mongo = mongo
     self.serializers = {
       'drink': self.toDrink,
       'review': self.toReview,
       'user': self.toUser
     }
-
+    
   # region User
 
   def getUser(self, email: str) -> User or None:

@@ -1,4 +1,5 @@
 from bson import ObjectId
+from flask_jwt_extended import jwt_required
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
 
@@ -36,8 +37,8 @@ class MultipleReview(Resource):
 
     return ({ "data": res }, 200)
 
+  @jwt_required()
   def post(self) -> tuple[dict, int]:
-
     self.parser.add_argument('user_email', type = str)
     self.parser.add_argument('drink_id', type = str)
     self.parser.add_argument('comment', type = str)
@@ -54,6 +55,7 @@ class MultipleReview(Resource):
     res = self.db.createReview(email, ObjectId(drink_id), comment, rating)
     return ({ "data": res.toJSON() }, 201)
 
+  @jwt_required()
   def delete(self) -> tuple[dict, int]:
     self.parser.add_argument("_ids", type = str, action = "append")
     args = self.parser.parse_args()

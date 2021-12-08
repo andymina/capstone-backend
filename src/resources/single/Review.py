@@ -1,6 +1,7 @@
 from db.driver import DBdriver
 from bson import ObjectId
 from flask_restful import Resource, reqparse
+from flask_jwt_extended import jwt_required
 
 class SingleReview(Resource):
     """API for single review endpoints.
@@ -40,6 +41,7 @@ class SingleReview(Resource):
         res = self.db.getReview(ObjectId(_id))
         return self.review_dne if not res else ({ "data": res.toJSON() }, 200)
 
+    @jwt_required()
     def put(self, _id: str) -> tuple[dict, int]:
         """Given an object where the (key, value) pairs are the fields to be updated, updates the
         review in the database and returns the updated review.
@@ -67,6 +69,7 @@ class SingleReview(Resource):
         else:
             return ({ "data": res.toJSON(), }, 200)
 
+    @jwt_required()
     def delete(self, _id: str) -> tuple[dict, int]:
         """Deletes the review with the given _id.
             Route

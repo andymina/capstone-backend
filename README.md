@@ -3,30 +3,21 @@
 ## Table of Contents
 
 - [Summary](#summary)
+- [Error Handling](#error-handling)
 - [Route Parameters](#route-parameters)
 - [Data Modeling](#data-modeling)
   - [User](#user-model)
   - [Drink](#drink-model)
   - [Review](#review-model)
+- [Local Development](#local-development)
+- [Authentication](#authentication)
+- [Protected API Endpoints](#protected-api-endpoints)
 - [User API](#user-api)
 ([Single](#single-user-usersstringemail), [Multiple](#multiple-users-users))
 - [Drink API](#drink-api)
 ([Single](#single-drink-drinksstring_id), [Multiple](#multiple-drinks-drinks))
 - [Review API](#review-api)
 ([Single](#single-review-reviewsstring_id), [Multiple](#multiple-reviews-reviews))
-- [Completed APIs](#completed-apis)
-
-## Completed APIs
-
-- User
-  - [ ] Single
-  - [ ] Multiple
-- Drink
-  - [x] Single
-  - [ ] Multiple
-- Review
-  - [ ] Single
-  - [ ] Multiple
 
 ## Summary
 
@@ -62,11 +53,24 @@ If an API endpoint encounters an unexpected error during execution, it will retu
 within the response. If the API endpoint specifies that `null` will be returned, then it will be
 in `res` of the `data` object.
 
-```
+```javascript
 {
   "data": {
     "res": as specified by the API endpoint,
     "err": String
+  }
+}
+```
+
+If there validation errors within a form (e.g. poorly formatted email address), an object containing
+errors of each field will be returned. The structure is as follows:
+
+```javascript
+{
+  "data": {
+    "email": "Invalid email address",
+    "pw": "Password must be between 6 and 18 characters",
+    ...
   }
 }
 ```
@@ -118,6 +122,93 @@ class Review {
     date: String        // ISO 8601 formatted string
 }
 ```
+
+# Local Development
+
+Python version 3.9.7+ is needed to run this back-end locally. The steps are as follows:
+
+1. Clone this repo and `cd` into the root folder of the project.
+2. `pip install -r requirements.txt`
+3. `python main.py`
+
+# Authentication
+
+Authentication is done through JWTs which expire after 12 hours. To access protected API routes, the
+following headers must be included:
+
+```javascript
+{
+  "Content-Type": "application/json",
+  "Authorization": `Bearer ${token}` // where token is the token returned from log in or sign up
+}
+```
+
+## Log in `/users/login`
+### POST
+
+**Summary**: Given a user email and pw combination, returns the user in the database.
+
+**Parameters**:
+
+- API
+  - `<String> email`: email of the user to be logged in
+  - `<String> pw`: password of the user to be logged in
+
+**Returns**: `null` if a user with the given email DNE. If form validation fails, returns the object
+described in *Error Handling*. Otherwise, returns a `JWT` and `User` with the following structure.
+
+```
+{
+  "data": {
+    "token": JWT,
+    "user": User
+  }
+}
+```
+
+## Sign up `/users`
+
+### POST
+
+**Summary**: Given the necessary data to make a user, creates a User in the database.
+
+**Parameters**:
+
+- API
+  - `<String> fname`: first name
+  - `<String> lname`: last name
+  - `<String> email`: email, must be unique
+  - `<String> pw`: password
+
+**Returns**: If form validation fails, returns the object described in
+[Error Handling](#error-handling). Otherwise, returns a `JWT` and `User` with the following structure.
+
+```
+{
+  "data": {
+    "token": JWT,
+    "user": User
+  }
+}
+```
+
+# Protected API Endpoints
+
+Some endpoints in the API are protected, meaning they can only be accessed by supplying a JWT
+in the headers of the requests. The following endpoints require a JWT in the header:
+
+- `[DELETE] /users`: delete multiple Users
+- `[PUT] /users/<string:email>`: update User by email
+- `[DELETE] /users/<string:email>`: delete User by email
+- `[POST] /drinks`: create a Drink
+- `[DELETE] /drinks`: delete multiple Drinks
+- `[PUT] /drinks/<string:_id>`: update Drink by _id
+- `[DELETE] /drinks/<string:_id>`: delete Drink by _id
+- `[POST] /reviews`: create a Review
+- `[DELETE] /reviews`: delete multiple Reviews
+- `[PUT] /reviews/<string:_id>`: update Review by _id
+- `[DELETE] /reviews/<string:_id>`: delete Review by _id
+
 
 # User API
 
@@ -173,21 +264,6 @@ user DNE.
   - `<Array[String]> emails`: list of emails of users to be retrieved.
 
 **Returns**: `Array[User]`. If a user isn't retrieved, `null` is returned in its place.
-
-### POST
-
-**Summary**: Given the necessary data to make a user, creates a User in the
-database.
-
-**Parameters**:
-
-- API
-  - `<String> fname`: first name
-  - `<String> lname`: last name
-  - `<String> email`: email, must be unique
-  - `<String> pw`: password
-
-**Returns**: newly created `User`.
 
 ### DELETE
 
