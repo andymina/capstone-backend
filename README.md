@@ -11,6 +11,7 @@
   - [Review](#review-model)
 - [Local Development](#local-development)
 - [Authentication](#authentication)
+- [Protected API Endpoints](#protected-api-endpoints)
 - [User API](#user-api)
 ([Single](#single-user-usersstringemail), [Multiple](#multiple-users-users))
 - [Drink API](#drink-api)
@@ -190,6 +191,24 @@ described in *Error Handling*. Otherwise, returns a `JWT` and `User` with the fo
   }
 }
 ```
+
+# Protected API Endpoints
+
+Some endpoints in the API are protected, meaning they can only be accessed by supplying a JWT
+in the headers of the requests. The following endpoints require a JWT in the header:
+
+- `[DELETE] /users`: delete multiple Users
+- `[PUT] /users/<string:email>`: update User by email
+- `[DELETE] /users/<string:email>`: delete User by email
+- `[POST] /drinks`: create a Drink
+- `[DELETE] /drinks`: delete multiple Drinks
+- `[PUT] /drinks/<string:_id>`: update Drink by _id
+- `[DELETE] /drinks/<string:_id>`: delete Drink by _id
+- `[POST] /reviews`: create a Review
+- `[DELETE] /reviews`: delete multiple Reviews
+- `[PUT] /reviews/<string:_id>`: update Review by _id
+- `[DELETE] /reviews/<string:_id>`: delete Review by _id
+
 
 # User API
 
