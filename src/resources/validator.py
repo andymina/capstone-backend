@@ -1,11 +1,11 @@
 import re
 
-# 1 number, 1 lower, 1 upper, 1 special char
-pw_regex = r"^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!#()-*_&@$%?])[A-Za-z\d!#()-*_&@$%?]{6,18}$$"
 email_regex = r"[\w\d+\.]+@[[\w\d+\.]+\.[\w\d]+"
 fname_regex = r"[\w-]+"
 lname_regex = r"[\w-]+[ \w\d]+\.{0,1}"
-special = list("!#()-*_&@$%?")
+upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+lower = upper.lower()
+nums = "1234567890"
 
 def validate(form: dict, mode="login") -> dict[str, str]:
   """Form validator.
@@ -50,10 +50,24 @@ def validate(form: dict, mode="login") -> dict[str, str]:
   # check email against regex
   if not re.match(email_regex, form["email"]):
     errors["email"] = "Invalid email format"
-  
-  # check pw against regex
-  if not re.match(pw_regex, form["pw"]):
-    errors["pw"] = f"Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (one of {special})"
+
+  has_upper = False
+  while not has_upper:
+    for c in upper:
+      if c in form["pw"]:
+        has_upper = True
+        break
+
+  has_lower = False
+  while not has_lower:
+    for c in lower:
+      if c in form["pw"]:
+        has_lower = True
+        break
+
+  if not has_upper or not has_lower:
+    errors["pw"] = "Password must contain at least one uppercase letter and one lowercase letter"
+    
   if not 6 <= len(form["pw"]) <= 18:
     errors["pw"] = "Password must be between 6 and 18 characters"
 
