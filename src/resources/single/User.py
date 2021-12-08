@@ -72,13 +72,13 @@ class SingleUser(Resource):
     # grab the existing user
     user = self.db.getUser(args["email"])
     if user is None:
-      return self.user_dne
+      return ({ "data": {"email": "User with that email does not exist"}}, 400)
     
     # check pw and create token
     pw_match = bcrypt.checkpw(args["pw"].encode("utf-8"), user.pw.encode("utf-8"))
 
     if not pw_match:
-      return ({ "data": { "pw": "Password incorrect" } }, 401)
+      return ({ "data": { "pw": "Password incorrect" } }, 400)
 
     token = create_access_token(user.toJSON(), expires_delta=delta(hours=12))
     return ({ "data": { "token": token, "user": user.toJSON() } }, 200)
