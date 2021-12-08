@@ -6,8 +6,8 @@ class Review:
 
   def __init__(
     self, user_email: str, drink_id: ObjectId,
-    comment: str, rating: int, date = datetime.now(),
-    img: str
+    comment: str, rating: int, drink_name: str,
+    date = datetime.now(),
   ) -> None:
     """Create a Review object according to our system diagram.
     """
@@ -16,7 +16,7 @@ class Review:
     self.comment = comment
     self.rating = rating
     self.date = date
-    self.img = img
+    self.drink_name = drink_name
 
   def __repr__(self) -> str:
     data = pformat(vars(self))[1:-1]

@@ -177,8 +177,10 @@ class DBdriver:
     if existing_review:
       return self.toReview(existing_review)
 
+    drink = self.getDrink(drink_id)
+
     # create the Review in the DB
-    temp = Review(user_email, drink_id, comment, rating)
+    temp = Review(user_email, drink_id, comment, rating, drink.name)
     temp._id = self.client.reviews.insert_one(vars(temp)).inserted_id
 
     # attach it to a drink
@@ -408,7 +410,7 @@ class DBdriver:
     res = Review(
       doc['user_email'], doc['drink_id'],
       doc['comment'], doc['rating'],
-      doc['date']
+      doc["drink_name"], doc['date']
     )
     # set _id
     res._id = doc['_id']
