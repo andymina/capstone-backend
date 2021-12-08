@@ -76,11 +76,11 @@ class DBdriver:
     """Returns all items of 'type' created by this user.
 
       Arguments:
-        - type { str }: Must be one of ['drink', 'review', 'favorite']
+        - type { str }: Must be one of ['drink', 'review', 'favorite', 'img']
         - email { str }
 
       Raises:
-        - `ValueError`: if type is not one of ['drink', 'favorite', 'review']
+        - `ValueError`: if type is not one of ['drink', 'favorite', 'review', 'img']
       
       Returns:
         - `list`: list of type objects for the given user. If type is 'favorite'
@@ -177,8 +177,10 @@ class DBdriver:
     if existing_review:
       return self.toReview(existing_review)
 
+    drink = self.getDrink(drink_id)
+
     # create the Review in the DB
-    temp = Review(user_email, drink_id, comment, rating)
+    temp = Review(user_email, drink_id, comment, rating, drink.name)
     temp._id = self.client.reviews.insert_one(vars(temp)).inserted_id
 
     # attach it to a drink
@@ -271,7 +273,7 @@ class DBdriver:
     res = self.client.drinks.find_one({ '_id': _id })
     return self.toDrink(res) if res else None
 
-  def createDrink(self, user_email: str, name: str, ingredients: list) -> Drink:
+  def createDrink(self, user_email: str, name: str, ingredients: list, img: str, des: str) -> Drink:
     """Creates a Drink in the db and returns it.
 
       Arguments:
@@ -286,7 +288,7 @@ class DBdriver:
       return self.toDrink(existing_drink)
 
     # create new Drink
-    temp = Drink(user_email, name, ingredients)
+    temp = Drink(user_email, name, ingredients, img, des)
     doc = vars(temp).copy()
     doc['review_ids'] = list(doc['review_ids'])
 
@@ -408,7 +410,7 @@ class DBdriver:
     res = Review(
       doc['user_email'], doc['drink_id'],
       doc['comment'], doc['rating'],
-      doc['date']
+      doc["drink_name"], doc['date']
     )
     # set _id
     res._id = doc['_id']
@@ -424,7 +426,7 @@ class DBdriver:
       Returns:
         - `Drink`
     """
-    res = Drink(doc['user_email'], doc['name'], doc['ingredients'])
+    res = Drink(doc['user_email'], doc['name'], doc['ingredients'], doc["img"], doc["des"])
     for k, v in doc.items():
       setattr(res, k, v)
     res.review_ids = set(doc["review_ids"])
