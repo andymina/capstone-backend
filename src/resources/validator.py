@@ -52,22 +52,20 @@ def validate(form: dict, mode="login") -> dict[str, str]:
     errors["email"] = "Invalid email format"
 
   has_upper = False
-  while not has_upper:
-    for c in upper:
-      if c in form["pw"]:
-        has_upper = True
-        break
+  for c in upper:
+    if c in form["pw"]:
+      has_upper = True
+      break
 
   has_lower = False
-  while not has_lower:
-    for c in lower:
-      if c in form["pw"]:
-        has_lower = True
-        break
+  for c in lower:
+    if c in form["pw"]:
+      has_lower = True
+      break
 
   if not has_upper or not has_lower:
     errors["pw"] = "Password must contain at least one uppercase letter and one lowercase letter"
-    
+
   if not 6 <= len(form["pw"]) <= 18:
     errors["pw"] = "Password must be between 6 and 18 characters"
 
