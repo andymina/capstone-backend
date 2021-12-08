@@ -94,11 +94,11 @@ class MultipleDrink(Resource):
 
     # error handling 
     if None in params:
-      return ({ "data": { "err": "Missing one of ['user_email', 'name', 'ingredients']" } }, 400)
+      return ({ "data": { "err": "Missing one of ['user_email', 'name', 'ingredients', 'img']" } }, 400)
     if not len(ings):
       return ({ "data": { "err": "Parameter `ingredients` cannot be empty." } }, 400)
 
-    res = self.db.createDrink(email, name, ings, params)
+    res = self.db.createDrink(email, name, ings, img)
     return ({ "data": res.toJSON() }, 201)
 
   @jwt_required()
