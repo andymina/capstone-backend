@@ -87,9 +87,10 @@ class MultipleDrink(Resource):
     self.parser.add_argument('user_email', type = str)
     self.parser.add_argument('name', type = str)
     self.parser.add_argument('ingredients', type = list, action= "append")
+    self.parser.add_argument("img", type = str)
     args = self.parser.parse_args()
     
-    email, name, ings = params = (args['user_email'], args["name"], args["ingredients"])
+    email, name, ings, img = params = (args['user_email'], args["name"], args["ingredients"], args["img"])
 
     # error handling 
     if None in params:
@@ -97,7 +98,7 @@ class MultipleDrink(Resource):
     if not len(ings):
       return ({ "data": { "err": "Parameter `ingredients` cannot be empty." } }, 400)
 
-    res = self.db.createDrink(email, name, ings)
+    res = self.db.createDrink(email, name, ings, params)
     return ({ "data": res.toJSON() }, 201)
 
   @jwt_required()

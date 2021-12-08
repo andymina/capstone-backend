@@ -271,7 +271,7 @@ class DBdriver:
     res = self.client.drinks.find_one({ '_id': _id })
     return self.toDrink(res) if res else None
 
-  def createDrink(self, user_email: str, name: str, ingredients: list) -> Drink:
+  def createDrink(self, user_email: str, name: str, ingredients: list, img: str) -> Drink:
     """Creates a Drink in the db and returns it.
 
       Arguments:
@@ -286,7 +286,7 @@ class DBdriver:
       return self.toDrink(existing_drink)
 
     # create new Drink
-    temp = Drink(user_email, name, ingredients)
+    temp = Drink(user_email, name, ingredients, img)
     doc = vars(temp).copy()
     doc['review_ids'] = list(doc['review_ids'])
 
@@ -424,7 +424,7 @@ class DBdriver:
       Returns:
         - `Drink`
     """
-    res = Drink(doc['user_email'], doc['name'], doc['ingredients'])
+    res = Drink(doc['user_email'], doc['name'], doc['ingredients'], doc["img"])
     for k, v in doc.items():
       setattr(res, k, v)
     res.review_ids = set(doc["review_ids"])
