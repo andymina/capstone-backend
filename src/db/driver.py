@@ -345,17 +345,19 @@ class DBdriver:
       Returns:
           - `bool`: True if the Drink was removed, False otherwise.
     """
-    # delete the drink from the DB
-    res = self.client.drinks.find_one_and_delete({ "_id": _id })
-    if not res:
-      return False
+    # get the drink
+    drink = self.getDrink(_id)
+
+    # delete every review in the drink
+    for id in drink.review_ids:
+      self.deleteReview(id)
     
     # delete the drink from the user
-    self.detachItem("drink", res["user_email"], _id)
+    self.detachItem("drink", drink.user_email, _id)
 
-    # remove reviews attached to this drink
-    self.client.reviews.delete_many({ "_id": { "$in": res["review_ids"] } })
-    return True
+    # delete the drink
+    res = self.client.drinks.find_one_and_delete({ "_id": _id })
+    return bool(res)
 
   def sampleDrinks(self, size: int) -> list[Drink]:
     """Returns size random drinks from the database
