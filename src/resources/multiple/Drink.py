@@ -1,6 +1,7 @@
 from bson import ObjectId
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
+from flask_jwt_extended import jwt_required
 
 class MultipleDrink(Resource):
   """API for multiple drink endpoints.
@@ -68,6 +69,7 @@ class MultipleDrink(Resource):
     
     return ({ "data": res }, 200)
 
+  @jwt_required()
   def post(self) -> tuple[dict, int]:
     """Creates a Drink given the necessary data to make a drink.
 
@@ -85,19 +87,22 @@ class MultipleDrink(Resource):
     self.parser.add_argument('user_email', type = str)
     self.parser.add_argument('name', type = str)
     self.parser.add_argument('ingredients', type = list, action= "append")
+    self.parser.add_argument("des", type = str)
+    self.parser.add_argument("img", type = str)
     args = self.parser.parse_args()
     
-    email, name, ings = params = (args['user_email'], args["name"], args["ingredients"])
+    params = (args['user_email'], args["name"], args["ingredients"], args["img"], args["des"])
 
     # error handling 
     if None in params:
-      return ({ "data": { "err": "Missing one of ['user_email', 'name', 'ingredients']" } }, 400)
-    if not len(ings):
+      return ({ "data": { "err": "Missing one of ['user_email', 'name', 'ingredients', 'img', 'des']" } }, 400)
+    if not len(args["ingredients"]):
       return ({ "data": { "err": "Parameter `ingredients` cannot be empty." } }, 400)
 
-    res = self.db.createDrink(email, name, ings)
+    res = self.db.createDrink(args["user_email"], args["name"], args["ingredients"], args["img"], args["des"])
     return ({ "data": res.toJSON() }, 201)
 
+  @jwt_required()
   def delete(self) -> tuple[dict, int]:
     """Removes drinks from the database given a list of corresponding _ids.
 

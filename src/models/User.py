@@ -85,10 +85,3 @@ class User:
       res[s + '_ids'] = [str(_id) for _id in getattr(self, s + '_ids')]
 
     return res
-
-# sample code
-# andy = User("andy", "mina", "a@gmail.com", "123")
-# andy.add_item('drink', ObjectId(b'foo-bar-quux'))
-# print(andy)
-# print('---------- JSON ---------')
-# print(andy.toJSON())

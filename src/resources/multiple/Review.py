@@ -1,4 +1,5 @@
 from bson import ObjectId
+from flask_jwt_extended import jwt_required
 from db.driver import DBdriver
 from flask_restful import Resource, reqparse
 
@@ -23,8 +24,6 @@ class MultipleReview(Resource):
     if args["_ids"] is not None and args["sample"] is not None:
       return ({"data": { "err": "Cannot pass both _ids and sample parameters; choose one." } }, 400)
     elif args["_ids"] is not None:
-      print("HAVE _IDSSSS")
-      print(args["_ids"])
       if not len(args["_ids"]):
         return ({ "data": { "err": "Parameter `_ids` cannot be empty." } }, 400)
 
@@ -38,8 +37,8 @@ class MultipleReview(Resource):
 
     return ({ "data": res }, 200)
 
+  @jwt_required()
   def post(self) -> tuple[dict, int]:
-
     self.parser.add_argument('user_email', type = str)
     self.parser.add_argument('drink_id', type = str)
     self.parser.add_argument('comment', type = str)
@@ -56,6 +55,7 @@ class MultipleReview(Resource):
     res = self.db.createReview(email, ObjectId(drink_id), comment, rating)
     return ({ "data": res.toJSON() }, 201)
 
+  @jwt_required()
   def delete(self) -> tuple[dict, int]:
     self.parser.add_argument("_ids", type = str, action = "append")
     args = self.parser.parse_args()
