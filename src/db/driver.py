@@ -480,7 +480,8 @@ class DBdriver:
     # attempt to update db
     drink = self.client.drinks.find_one_and_update(
       { '_id': drink_id },
-      { '$pullAll': { "review_ids": [review_id] } }
+      { '$pullAll': { "review_ids": [review_id] } },
+      return_document=ReturnDocument.AFTER
     )
 
     if not drink:
